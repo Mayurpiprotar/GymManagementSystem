@@ -33,6 +33,10 @@ public class Member
     [DataType(DataType.Date)]
     public DateTime JoinDate { get; set; }
 
+    // Account linkage
+    public string? UserId { get; set; }
+    public ApplicationUser? User { get; set; }
+
     // Navigation properties
     public ICollection<Membership> Memberships { get; set; } = new List<Membership>();
     public ICollection<Payment> Payments { get; set; } = new List<Payment>();

@@ -1,9 +1,10 @@
 using GymManagementSystem.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -70,6 +71,20 @@ public class ApplicationDbContext : DbContext
             .HasOne(w => w.Trainer)
             .WithMany(t => t.WorkoutPlans)
             .HasForeignKey(w => w.TrainerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 7. Member -> ApplicationUser (One-to-One / Optional)
+        modelBuilder.Entity<Member>()
+            .HasOne(m => m.User)
+            .WithOne()
+            .HasForeignKey<Member>(m => m.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 8. Trainer -> ApplicationUser (One-to-One / Optional)
+        modelBuilder.Entity<Trainer>()
+            .HasOne(t => t.User)
+            .WithOne()
+            .HasForeignKey<Trainer>(t => t.UserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

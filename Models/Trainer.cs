@@ -27,6 +27,10 @@ public class Trainer
     [DataType(DataType.Date)]
     public DateTime HireDate { get; set; }
 
+    // Account linkage
+    public string? UserId { get; set; }
+    public ApplicationUser? User { get; set; }
+
     // Navigation properties
     public ICollection<WorkoutPlan> WorkoutPlans { get; set; } = new List<WorkoutPlan>();
 }
