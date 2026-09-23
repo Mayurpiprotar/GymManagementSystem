@@ -1,0 +1,93 @@
+@model GymManagementSystem.Models.ViewModels.TrainerCreateViewModel
+
+@{
+    ViewData["Title"] = "Add New Trainer";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Add New Trainer</h1>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <h5 class="text-primary mb-3">Trainer Information</h5>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label fw-semibold">Full Name *</label>
+                                <input asp-for="FullName" class="form-control" placeholder="e.g. Sarah Connor" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-semibold">Email Address *</label>
+                                <input asp-for="Email" class="form-control" placeholder="e.g. sarah@gym.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Phone" class="form-label fw-semibold">Phone Number *</label>
+                                <input asp-for="Phone" class="form-control" placeholder="e.g. 555-0199" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Specialization" class="form-label fw-semibold">Specialization *</label>
+                                <input asp-for="Specialization" class="form-control" placeholder="e.g. Strength & Conditioning" />
+                                <span asp-validation-for="Specialization" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="HireDate" class="form-label fw-semibold">Hire Date *</label>
+                                <input asp-for="HireDate" type="date" class="form-control" />
+                                <span asp-validation-for="HireDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <h5 class="text-primary mb-3">Trainer Login Account</h5>
+                        <p class="text-muted small mb-3">An Identity user account will be created with the <strong>Trainer</strong> role using the email above as username.</p>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label fw-semibold">Password *</label>
+                                <input asp-for="Password" class="form-control" autocomplete="new-password" placeholder="At least 6 characters" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-4">
+                                <label asp-for="ConfirmPassword" class="form-label fw-semibold">Confirm Password *</label>
+                                <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Re-enter password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Trainer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
