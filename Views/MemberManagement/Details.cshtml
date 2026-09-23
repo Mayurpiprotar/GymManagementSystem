@@ -1,0 +1,71 @@
+@model GymManagementSystem.Models.Member
+
+@{
+    ViewData["Title"] = "Member Details";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Member Details</h1>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.MemberId" class="btn btn-primary me-2">Edit</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0">@Model.FullName</h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Member ID</dt>
+                        <dd class="col-sm-8 fw-semibold">#@Model.MemberId</dd>
+
+                        <dt class="col-sm-4 text-muted">Full Name</dt>
+                        <dd class="col-sm-8">@Model.FullName</dd>
+
+                        <dt class="col-sm-4 text-muted">Email Address</dt>
+                        <dd class="col-sm-8"><a href="mailto:@Model.Email">@Model.Email</a></dd>
+
+                        <dt class="col-sm-4 text-muted">Phone Number</dt>
+                        <dd class="col-sm-8">@Model.Phone</dd>
+
+                        <dt class="col-sm-4 text-muted">Date of Birth</dt>
+                        <dd class="col-sm-8">@Model.DateOfBirth.ToString("yyyy-MM-dd")</dd>
+
+                        <dt class="col-sm-4 text-muted">Gender</dt>
+                        <dd class="col-sm-8"><span class="badge bg-secondary">@Model.Gender</span></dd>
+
+                        <dt class="col-sm-4 text-muted">Address</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.Address) ? "Not provided" : Model.Address)</dd>
+
+                        <dt class="col-sm-4 text-muted">Join Date</dt>
+                        <dd class="col-sm-8">@Model.JoinDate.ToString("yyyy-MM-dd")</dd>
+
+                        <dt class="col-sm-4 text-muted">Account Status</dt>
+                        <dd class="col-sm-8">
+                            @if (!string.IsNullOrEmpty(Model.UserId))
+                            {
+                                <span class="badge bg-success">Linked to Identity User</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">No Login Account</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+                <div class="card-footer bg-light d-flex justify-content-between py-3">
+                    <a asp-action="Delete" asp-route-id="@Model.MemberId" class="btn btn-outline-danger btn-sm">Delete Member</a>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.MemberId" class="btn btn-primary btn-sm me-2">Edit</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

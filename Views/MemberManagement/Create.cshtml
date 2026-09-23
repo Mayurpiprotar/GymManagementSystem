@@ -1,0 +1,89 @@
+@model GymManagementSystem.Models.Member
+
+@{
+    ViewData["Title"] = "Add New Member";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Add New Member</h1>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label fw-semibold">Full Name *</label>
+                                <input asp-for="FullName" class="form-control" placeholder="e.g. John Doe" />
+                                <span asp-validation-for="FullName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-semibold">Email Address *</label>
+                                <input asp-for="Email" class="form-control" placeholder="e.g. john@example.com" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Phone" class="form-label fw-semibold">Phone Number *</label>
+                                <input asp-for="Phone" class="form-control" placeholder="e.g. 123-456-7890" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Gender" class="form-label fw-semibold">Gender *</label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                    <option value="Unspecified">Unspecified</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DateOfBirth" class="form-label fw-semibold">Date of Birth *</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="JoinDate" class="form-label fw-semibold">Join Date *</label>
+                                <input asp-for="JoinDate" type="date" class="form-control" />
+                                <span asp-validation-for="JoinDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Address" class="form-label fw-semibold">Address</label>
+                            <textarea asp-for="Address" class="form-control" rows="2" placeholder="Street address, city, etc."></textarea>
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Create Member</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
