@@ -1,16 +1,196 @@
+@model GymManagementSystem.Models.ViewModels.MemberDashboardViewModel
+
 @{
     ViewData["Title"] = "Member Dashboard";
 }
 
 <div class="container mt-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-body text-center py-5">
-            <h1 class="display-5 text-success mb-3">Member Dashboard</h1>
-            <p class="lead text-muted">Welcome to your Member area. This is a placeholder destination for authenticated Member users.</p>
-            <p class="text-muted">Logged in as: <strong>@User.Identity?.Name</strong></p>
-            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline mt-3">
-                <button type="submit" class="btn btn-outline-danger">Logout</button>
-            </form>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Member Dashboard</h1>
+            <p class="text-muted mb-0">Welcome back, <span class="fw-semibold text-dark">@Model.MemberName</span>!</p>
+        </div>
+        <div>
+            <span class="badge bg-light text-dark border px-3 py-2">
+                Member ID: #@Model.MemberId
+            </span>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Membership Card Column -->
+        <div class="col-lg-8 mb-4">
+            @if (Model.HasMembership && Model.CurrentMembership != null)
+            {
+                var cur = Model.CurrentMembership;
+                var plan = cur.MembershipPlan;
+
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Current Membership</h5>
+                        @if (cur.Status == "Active")
+                        {
+                            <span class="badge bg-success fs-6">Active</span>
+                        }
+                        else if (cur.Status == "Upcoming")
+                        {
+                            <span class="badge bg-info text-dark fs-6">Upcoming</span>
+                        }
+                        else if (cur.Status == "Expired")
+                        {
+                            <span class="badge bg-secondary fs-6">Expired</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-light text-dark fs-6">@cur.Status</span>
+                        }
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-7">
+                                <h3 class="fw-bold mb-1 text-primary">@plan?.Name</h3>
+                                <p class="text-muted mb-0">
+                                    @(string.IsNullOrWhiteSpace(plan?.Description) ? "Full access membership package." : plan?.Description)
+                                </p>
+                            </div>
+                            <div class="col-md-5 text-md-end mt-3 mt-md-0">
+                                <span class="display-6 fw-bold text-success">$@plan?.Price.ToString("0.00")</span>
+                                <div class="text-muted small">for @plan?.DurationInMonths @(plan?.DurationInMonths == 1 ? "month" : "months")</div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded">
+                                    <div class="text-muted small">Start Date</div>
+                                    <div class="fw-bold fs-5">@cur.StartDate.ToString("MMMM dd, yyyy")</div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="p-3 bg-light rounded">
+                                    <div class="text-muted small">End Date</div>
+                                    <div class="fw-bold fs-5 text-primary">@cur.EndDate.ToString("MMMM dd, yyyy")</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 p-3 bg-light rounded small text-muted">
+                            <strong>Status:</strong>
+                            @if (cur.Status == "Active")
+                            {
+                                <span>Your membership is currently active. Enjoy full access to all included facilities and classes!</span>
+                            }
+                            else if (cur.Status == "Upcoming")
+                            {
+                                <span>Your membership is scheduled to begin on <strong>@cur.StartDate.ToString("yyyy-MM-dd")</strong>.</span>
+                            }
+                            else
+                            {
+                                <span>Your membership has expired. Please visit the front desk to renew your plan.</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.AllMemberships.Count > 1)
+                {
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-light py-3">
+                            <h6 class="card-title mb-0">Membership History</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Plan</th>
+                                            <th>Duration</th>
+                                            <th>Start Date</th>
+                                            <th>End Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var hist in Model.AllMemberships)
+                                        {
+                                            <tr>
+                                                <td class="fw-medium">@hist.MembershipPlan?.Name</td>
+                                                <td>@hist.MembershipPlan?.DurationInMonths @(hist.MembershipPlan?.DurationInMonths == 1 ? "month" : "months")</td>
+                                                <td>@hist.StartDate.ToString("yyyy-MM-dd")</td>
+                                                <td>@hist.EndDate.ToString("yyyy-MM-dd")</td>
+                                                <td>
+                                                    @if (hist.Status == "Active")
+                                                    {
+                                                        <span class="badge bg-success">Active</span>
+                                                    }
+                                                    else if (hist.Status == "Upcoming")
+                                                    {
+                                                        <span class="badge bg-info text-dark">Upcoming</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">Expired</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-3">
+                            <span class="display-4 text-warning">&#9888;</span>
+                        </div>
+                        <h4 class="fw-bold mb-2">No active membership found.</h4>
+                        <p class="text-muted mb-4">
+                            You currently do not have an active gym membership subscription. Please contact the front desk or gym administration to enroll in a membership plan.
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Profile & Account Info Column -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0">My Profile</h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="mb-0">
+                        <dt class="text-muted small">Full Name</dt>
+                        <dd class="fw-semibold mb-3">@Model.MemberName</dd>
+
+                        <dt class="text-muted small">Email Address</dt>
+                        <dd class="mb-3">@Model.Email</dd>
+
+                        <dt class="text-muted small">Phone Number</dt>
+                        <dd class="mb-3">@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</dd>
+
+                        <dt class="text-muted small">Member Since</dt>
+                        <dd class="mb-0">@Model.JoinDate.ToString("MMMM dd, yyyy")</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 text-center">
+                    <h6 class="fw-semibold mb-2">Need Help?</h6>
+                    <p class="small text-muted mb-3">Questions about your membership, renewals, or gym access? Contact gym staff at the reception desk.</p>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Logout</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

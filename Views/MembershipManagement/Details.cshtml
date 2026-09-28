@@ -1,0 +1,96 @@
+@model GymManagementSystem.Models.Membership
+
+@{
+    ViewData["Title"] = "Membership Details";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Membership Details</h1>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.MembershipId" class="btn btn-primary me-2">Edit</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0">Membership #@Model.MembershipId</h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Membership ID</dt>
+                        <dd class="col-sm-8 fw-semibold">#@Model.MembershipId</dd>
+
+                        <dt class="col-sm-4 text-muted">Member</dt>
+                        <dd class="col-sm-8">
+                            <span class="fw-semibold">@Model.Member?.FullName</span>
+                            <span class="text-muted">(@Model.Member?.Email)</span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Membership Plan</dt>
+                        <dd class="col-sm-8">
+                            <span class="fw-semibold">@Model.MembershipPlan?.Name</span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Plan Duration</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info text-dark">
+                                @Model.MembershipPlan?.DurationInMonths @(Model.MembershipPlan?.DurationInMonths == 1 ? "Month" : "Months")
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Plan Price</dt>
+                        <dd class="col-sm-8 fw-bold text-success">$@Model.MembershipPlan?.Price.ToString("0.00")</dd>
+
+                        <dt class="col-sm-4 text-muted">Start Date</dt>
+                        <dd class="col-sm-8">@Model.StartDate.ToString("yyyy-MM-dd")</dd>
+
+                        <dt class="col-sm-4 text-muted">End Date</dt>
+                        <dd class="col-sm-8 fw-semibold text-primary">@Model.EndDate.ToString("yyyy-MM-dd")</dd>
+
+                        <dt class="col-sm-4 text-muted">Status</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Status == "Active")
+                            {
+                                <span class="badge bg-success">Active</span>
+                            }
+                            else if (Model.Status == "Upcoming")
+                            {
+                                <span class="badge bg-info text-dark">Upcoming</span>
+                            }
+                            else if (Model.Status == "Expired")
+                            {
+                                <span class="badge bg-secondary">Expired</span>
+                            }
+                            else if (Model.Status == "Cancelled")
+                            {
+                                <span class="badge bg-danger">Cancelled</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark border">@Model.Status</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Associated Payments</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @(Model.Payments.Count > 0 ? "bg-primary" : "bg-secondary")">
+                                @Model.Payments.Count Record(s)
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="card-footer bg-light py-3 d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.MembershipId" class="btn btn-primary me-2">Edit Membership</a>
+                        <a asp-action="Delete" asp-route-id="@Model.MembershipId" class="btn btn-outline-danger">Delete</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

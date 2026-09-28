@@ -1,0 +1,99 @@
+@model IEnumerable<GymManagementSystem.Models.MembershipPlan>
+
+@{
+    ViewData["Title"] = "Membership Plan Management";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Membership Plans</h1>
+            <p class="text-muted mb-0">Configure gym membership packages, durations, and pricing.</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                + Add New Plan
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted mb-3">No membership plans configured in the system.</p>
+                    <a asp-action="Create" class="btn btn-sm btn-outline-primary">Add the First Plan</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Plan Name</th>
+                                <th>Duration</th>
+                                <th>Price</th>
+                                <th>Description</th>
+                                <th>Active Memberships</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@item.Name</td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            @item.DurationInMonths @(item.DurationInMonths == 1 ? "Month" : "Months")
+                                        </span>
+                                    </td>
+                                    <td class="fw-bold text-success">$@item.Price.ToString("0.00")</td>
+                                    <td class="text-muted small">
+                                        @(string.IsNullOrWhiteSpace(item.Description) ? "No description" : item.Description)
+                                    </td>
+                                    <td>
+                                        <span class="badge @(item.Memberships.Count > 0 ? "bg-primary" : "bg-secondary")">
+                                            @item.Memberships.Count
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.MembershipPlanId" class="btn btn-outline-secondary" title="View Details">
+                                                Details
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.MembershipPlanId" class="btn btn-outline-primary" title="Edit Plan">
+                                                Edit
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.MembershipPlanId" class="btn btn-outline-danger" title="Delete Plan">
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

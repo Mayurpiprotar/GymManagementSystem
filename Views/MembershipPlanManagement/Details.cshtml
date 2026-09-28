@@ -1,0 +1,63 @@
+@model GymManagementSystem.Models.MembershipPlan
+
+@{
+    ViewData["Title"] = "Membership Plan Details";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Plan Details</h1>
+                <div>
+                    <a asp-action="Edit" asp-route-id="@Model.MembershipPlanId" class="btn btn-primary me-2">Edit</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0">@Model.Name</h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Plan ID</dt>
+                        <dd class="col-sm-8 fw-semibold">#@Model.MembershipPlanId</dd>
+
+                        <dt class="col-sm-4 text-muted">Plan Name</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+
+                        <dt class="col-sm-4 text-muted">Duration</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-info text-dark">
+                                @Model.DurationInMonths @(Model.DurationInMonths == 1 ? "Month" : "Months")
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Price</dt>
+                        <dd class="col-sm-8 fw-bold text-success">$@Model.Price.ToString("0.00")</dd>
+
+                        <dt class="col-sm-4 text-muted">Description</dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrWhiteSpace(Model.Description) ? "No description provided." : Model.Description)
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Subscribed Memberships</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge @(Model.Memberships.Count > 0 ? "bg-primary" : "bg-secondary")">
+                                @Model.Memberships.Count Active / Total
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+                <div class="card-footer bg-light py-3 d-flex justify-content-between">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                    <div>
+                        <a asp-action="Edit" asp-route-id="@Model.MembershipPlanId" class="btn btn-primary me-2">Edit Plan</a>
+                        <a asp-action="Delete" asp-route-id="@Model.MembershipPlanId" class="btn btn-outline-danger">Delete Plan</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

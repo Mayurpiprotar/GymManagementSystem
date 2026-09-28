@@ -1,0 +1,92 @@
+@model GymManagementSystem.Models.ViewModels.MembershipViewModel
+
+@{
+    ViewData["Title"] = "Edit Membership";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Edit Membership</h1>
+                <div>
+                    <a asp-action="Details" asp-route-id="@Model.MembershipId" class="btn btn-outline-info me-2">View Details</a>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="MembershipId" />
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <div class="mb-3">
+                            <label asp-for="MemberId" class="form-label fw-semibold">Select Member *</label>
+                            <select asp-for="MemberId" asp-items="Model.MemberList" class="form-select"></select>
+                            <span asp-validation-for="MemberId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MembershipPlanId" class="form-label fw-semibold">Select Membership Plan *</label>
+                            <select asp-for="MembershipPlanId" asp-items="Model.PlanList" class="form-select"></select>
+                            <span asp-validation-for="MembershipPlanId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="StartDate" class="form-label fw-semibold">Start Date *</label>
+                                <input asp-for="StartDate" type="date" class="form-control" />
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">Calculated Status</label>
+                                <div>
+                                    @if (Model.Status == "Active")
+                                    {
+                                        <span class="badge bg-success fs-6 py-2 px-3">Active</span>
+                                    }
+                                    else if (Model.Status == "Upcoming")
+                                    {
+                                        <span class="badge bg-info text-dark fs-6 py-2 px-3">Upcoming</span>
+                                    }
+                                    else if (Model.Status == "Expired")
+                                    {
+                                        <span class="badge bg-secondary fs-6 py-2 px-3">Expired</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border fs-6 py-2 px-3">@Model.Status</span>
+                                    }
+                                </div>
+                                <div class="form-text small">Status automatically recalculates based on Start Date, Duration, and today's date.</div>
+                            </div>
+                        </div>
+
+                        @if (Model.EndDate.HasValue)
+                        {
+                            <div class="alert alert-light border py-2 px-3 small mb-4" role="alert">
+                                <strong>Current End Date:</strong> @Model.EndDate.Value.ToString("yyyy-MM-dd")<br />
+                                <span class="text-muted">Note: End Date will automatically recalculate server-side if Start Date or Plan Duration changes.</span>
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
