@@ -1,8 +1,76 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container py-4">
+    <!-- Hero Section -->
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm text-center">
+        <div class="container-fluid py-3">
+            <span class="badge bg-primary px-3 py-2 mb-3 fs-6">Gym Management System</span>
+            <h1 class="display-5 fw-bold text-dark mb-3">Empower Your Fitness Journey</h1>
+            <p class="col-md-8 mx-auto fs-5 text-muted mb-4">
+                A streamlined management platform for gym administrators, certified fitness trainers, and members.
+                Manage subscriptions, track workout programs, and streamline payment operations effortlessly.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin" asp-action="Index" class="btn btn-primary btn-lg px-4">Go to Admin Dashboard</a>
+                    }
+                    else if (User.IsInRole("Trainer"))
+                    {
+                        <a asp-controller="Trainer" asp-action="Index" class="btn btn-primary btn-lg px-4">Go to Trainer Dashboard</a>
+                    }
+                    else if (User.IsInRole("Member"))
+                    {
+                        <a asp-controller="Member" asp-action="Index" class="btn btn-primary btn-lg px-4">Go to My Dashboard</a>
+                    }
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-lg px-4">Log in</a>
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-outline-success btn-lg px-4">Register as Member</a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Highlights -->
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="display-6 text-primary mb-3">&#128197;</div>
+                    <h4 class="card-title fw-semibold">Membership Plans</h4>
+                    <p class="card-text text-muted">
+                        Flexible membership packages with automatic date-based active status tracking and expiration notifications.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="display-6 text-info mb-3">&#127947;</div>
+                    <h4 class="card-title fw-semibold">Trainer Workouts</h4>
+                    <p class="card-text text-muted">
+                        Personalized workout routines crafted by certified fitness trainers and assigned directly to gym members.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="display-6 text-success mb-3">&#128179;</div>
+                    <h4 class="card-title fw-semibold">Secure Payments</h4>
+                    <p class="card-text text-muted">
+                        Reliable transaction recording across Cash, Card, UPI, and Bank Transfer with full audit history.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
