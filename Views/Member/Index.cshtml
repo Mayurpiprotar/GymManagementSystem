@@ -157,6 +157,76 @@
                     </div>
                 </div>
             }
+
+            <!-- Payment History Section -->
+            <div class="card shadow-sm border-0 mt-4">
+                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Payment History</h5>
+                    <span class="badge bg-secondary">@Model.PaymentHistory.Count Record(s)</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.PaymentHistory != null && Model.PaymentHistory.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Membership / Plan</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var payment in Model.PaymentHistory)
+                                    {
+                                        <tr>
+                                            <td>@payment.PaymentDate.ToString("yyyy-MM-dd")</td>
+                                            <td>
+                                                <span class="fw-medium">@payment.Membership?.MembershipPlan?.Name</span>
+                                                <div class="text-muted small">Membership #@payment.MembershipId</div>
+                                            </td>
+                                            <td class="fw-bold text-success">$@payment.Amount.ToString("0.00")</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark border">@payment.PaymentMethod</span>
+                                            </td>
+                                            <td>
+                                                @if (payment.Status == "Paid")
+                                                {
+                                                    <span class="badge bg-success">Paid</span>
+                                                }
+                                                else if (payment.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                }
+                                                else if (payment.Status == "Failed")
+                                                {
+                                                    <span class="badge bg-danger">Failed</span>
+                                                }
+                                                else if (payment.Status == "Refunded")
+                                                {
+                                                    <span class="badge bg-secondary">Refunded</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark border">@payment.Status</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p class="mb-0">No payment history found.</p>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
 
         <!-- Profile & Account Info Column -->

@@ -62,6 +62,15 @@ public class MemberController : Controller
                              ?? memberships.FirstOrDefault(ms => ms.Status == "Upcoming")
                              ?? memberships.FirstOrDefault();
 
+        var payments = await _context.Payments
+            .AsNoTracking()
+            .Include(p => p.Membership)
+                .ThenInclude(ms => ms!.MembershipPlan)
+            .Where(p => p.MemberId == member.MemberId)
+            .OrderByDescending(p => p.PaymentDate)
+            .ThenByDescending(p => p.PaymentId)
+            .ToListAsync();
+
         var viewModel = new MemberDashboardViewModel
         {
             MemberId = member.MemberId,
@@ -71,7 +80,8 @@ public class MemberController : Controller
             JoinDate = member.JoinDate,
             HasMembership = currentMembership != null,
             CurrentMembership = currentMembership,
-            AllMemberships = memberships
+            AllMemberships = memberships,
+            PaymentHistory = payments
         };
 
         return View(viewModel);

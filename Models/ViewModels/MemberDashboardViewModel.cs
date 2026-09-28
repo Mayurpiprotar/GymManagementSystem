@@ -12,4 +12,5 @@ public class MemberDashboardViewModel
     public bool HasMembership { get; set; }
     public Membership? CurrentMembership { get; set; }
     public List<Membership> AllMemberships { get; set; } = new();
+    public List<Payment> PaymentHistory { get; set; } = new();
 }

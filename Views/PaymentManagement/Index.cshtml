@@ -1,0 +1,124 @@
+@model IEnumerable<GymManagementSystem.Models.Payment>
+
+@{
+    ViewData["Title"] = "Payment Management";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Payment Management</h1>
+            <p class="text-muted mb-0">Track and manage member payment transactions, billing methods, and statuses.</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                + Record New Payment
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <p class="text-muted mb-3">No payments recorded yet.</p>
+                    <a asp-action="Create" class="btn btn-sm btn-outline-primary">Record the First Payment</a>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Payment ID</th>
+                                <th>Member</th>
+                                <th>Membership / Plan</th>
+                                <th>Amount</th>
+                                <th>Payment Date</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">#@item.PaymentId</td>
+                                    <td>
+                                        <div class="fw-semibold">@item.Member?.FullName</div>
+                                        <div class="small text-muted">@item.Member?.Email</div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">@item.Membership?.MembershipPlan?.Name</span>
+                                        <div class="small text-muted">
+                                            Membership #@item.MembershipId
+                                        </div>
+                                    </td>
+                                    <td class="fw-bold text-success">$@item.Amount.ToString("0.00")</td>
+                                    <td>@item.PaymentDate.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@item.PaymentMethod</span>
+                                    </td>
+                                    <td>
+                                        @if (item.Status == "Paid")
+                                        {
+                                            <span class="badge bg-success">Paid</span>
+                                        }
+                                        else if (item.Status == "Pending")
+                                        {
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        }
+                                        else if (item.Status == "Failed")
+                                        {
+                                            <span class="badge bg-danger">Failed</span>
+                                        }
+                                        else if (item.Status == "Refunded")
+                                        {
+                                            <span class="badge bg-secondary">Refunded</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-light text-dark border">@item.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@item.PaymentId" class="btn btn-outline-secondary" title="View Details">
+                                                Details
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.PaymentId" class="btn btn-outline-primary" title="Edit Payment">
+                                                Edit
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.PaymentId" class="btn btn-outline-danger" title="Delete Payment">
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
