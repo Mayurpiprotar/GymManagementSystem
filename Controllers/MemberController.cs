@@ -71,6 +71,14 @@ public class MemberController : Controller
             .ThenByDescending(p => p.PaymentId)
             .ToListAsync();
 
+        var workoutPlans = await _context.WorkoutPlans
+            .AsNoTracking()
+            .Include(wp => wp.Trainer)
+            .Where(wp => wp.MemberId == member.MemberId)
+            .OrderByDescending(wp => wp.CreatedDate)
+            .ThenByDescending(wp => wp.WorkoutPlanId)
+            .ToListAsync();
+
         var viewModel = new MemberDashboardViewModel
         {
             MemberId = member.MemberId,
@@ -81,7 +89,8 @@ public class MemberController : Controller
             HasMembership = currentMembership != null,
             CurrentMembership = currentMembership,
             AllMemberships = memberships,
-            PaymentHistory = payments
+            PaymentHistory = payments,
+            WorkoutPlans = workoutPlans
         };
 
         return View(viewModel);

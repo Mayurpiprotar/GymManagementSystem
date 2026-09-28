@@ -3,14 +3,22 @@
 }
 
 <div class="container mt-4">
-    <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 mb-4">
         <div class="card-body text-center py-5">
-            <h1 class="display-5 text-info mb-3">Trainer Dashboard</h1>
-            <p class="lead text-muted">Welcome to the Trainer portal. This is a placeholder destination for authenticated Trainer users.</p>
+            <h1 class="display-5 text-info mb-3">Trainer Portal</h1>
+            <p class="lead text-muted">Welcome to your gym trainer workspace. Manage customized workout plans for your members.</p>
             <p class="text-muted">Logged in as: <strong>@User.Identity?.Name</strong></p>
-            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline mt-3">
-                <button type="submit" class="btn btn-outline-danger">Logout</button>
-            </form>
+            <div class="mt-4">
+                <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-primary px-4 py-2 me-2">
+                    My Workout Plans
+                </a>
+                <a asp-controller="TrainerWorkoutPlan" asp-action="Create" class="btn btn-outline-primary px-4 py-2 me-2">
+                    + Create Workout Plan
+                </a>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger px-4 py-2">Logout</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

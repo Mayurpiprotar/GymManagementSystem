@@ -13,4 +13,5 @@ public class MemberDashboardViewModel
     public Membership? CurrentMembership { get; set; }
     public List<Membership> AllMemberships { get; set; } = new();
     public List<Payment> PaymentHistory { get; set; } = new();
+    public List<WorkoutPlan> WorkoutPlans { get; set; } = new();
 }

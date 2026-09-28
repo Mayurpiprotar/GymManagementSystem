@@ -1,0 +1,72 @@
+@model GymManagementSystem.Models.ViewModels.WorkoutPlanViewModel
+
+@{
+    ViewData["Title"] = "Edit Workout Plan";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">Edit Workout Plan</h1>
+                    <p class="text-muted mb-0">Update routine details for Plan #@Model.WorkoutPlanId.</p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" asp-route-id="@Model.WorkoutPlanId" method="post">
+                        <input type="hidden" asp-for="WorkoutPlanId" />
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Trainer</label>
+                            <input type="text" class="form-control bg-light" value="@Model.TrainerName" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MemberId" class="form-label fw-semibold">Select Member *</label>
+                            <select asp-for="MemberId" asp-items="Model.MemberList" class="form-select">
+                                <option value="">-- Choose Member --</option>
+                            </select>
+                            <span asp-validation-for="MemberId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PlanName" class="form-label fw-semibold">Plan Name *</label>
+                            <input asp-for="PlanName" class="form-control" maxlength="100" />
+                            <span asp-validation-for="PlanName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-semibold">Description / Routine *</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" maxlength="500"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Created Date</label>
+                            <input type="text" class="form-control bg-light" value="@Model.CreatedDate.ToString("yyyy-MM-dd")" readonly />
+                            <div class="form-text small">Original created date is permanently retained.</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

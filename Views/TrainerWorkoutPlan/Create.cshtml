@@ -1,0 +1,66 @@
+@model GymManagementSystem.Models.ViewModels.WorkoutPlanViewModel
+
+@{
+    ViewData["Title"] = "Create Workout Plan";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2 mb-0">Create Workout Plan</h1>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Trainer</label>
+                            <input type="text" class="form-control bg-light" value="@Model.TrainerName" readonly />
+                            <div class="form-text small">Automatically assigned to your trainer profile.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MemberId" class="form-label fw-semibold">Select Member *</label>
+                            <select asp-for="MemberId" asp-items="Model.MemberList" class="form-select">
+                                <option value="">-- Choose Member --</option>
+                            </select>
+                            <span asp-validation-for="MemberId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PlanName" class="form-label fw-semibold">Plan Name *</label>
+                            <input asp-for="PlanName" class="form-control" placeholder="e.g. Strength Training, Beginner Cardio" maxlength="100" />
+                            <span asp-validation-for="PlanName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-semibold">Description / Routine *</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Detail the exercises, sets, repetitions, and weekly schedule..." maxlength="500"></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="alert alert-info py-2 px-3 small mb-4" role="alert">
+                            <strong>Note:</strong> Created Date will be automatically set to today's date upon submission.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">Create Workout Plan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
