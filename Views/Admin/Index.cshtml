@@ -1,16 +1,249 @@
+@model GymManagementSystem.Models.ViewModels.AdminDashboardViewModel
+
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
 
 <div class="container mt-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-body text-center py-5">
-            <h1 class="display-5 text-primary mb-3">Admin Dashboard</h1>
-            <p class="lead text-muted">Welcome to the Administrator portal. This is a placeholder destination for authenticated Admin users.</p>
-            <p class="text-muted">Logged in as: <strong>@User.Identity?.Name</strong></p>
-            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline mt-3">
-                <button type="submit" class="btn btn-outline-danger">Logout</button>
-            </form>
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1">Admin Dashboard</h1>
+            <p class="text-muted mb-0">Gym system overview, key performance indicators, and recent operations.</p>
+        </div>
+        <div>
+            <span class="badge bg-primary px-3 py-2 fs-6">Administrator</span>
+        </div>
+    </div>
+
+    <!-- Quick Actions Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light py-3">
+            <h5 class="card-title mb-0 fw-semibold">Quick Actions</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex flex-wrap gap-2">
+                <a asp-controller="MemberManagement" asp-action="Index" class="btn btn-outline-primary">
+                    Manage Members
+                </a>
+                <a asp-controller="TrainerManagement" asp-action="Index" class="btn btn-outline-primary">
+                    Manage Trainers
+                </a>
+                <a asp-controller="MembershipPlanManagement" asp-action="Index" class="btn btn-outline-primary">
+                    Manage Membership Plans
+                </a>
+                <a asp-controller="MembershipManagement" asp-action="Index" class="btn btn-outline-primary">
+                    Manage Memberships
+                </a>
+                <a asp-controller="PaymentManagement" asp-action="Index" class="btn btn-outline-primary">
+                    Manage Payments
+                </a>
+                <a asp-controller="WorkoutPlanManagement" asp-action="Index" class="btn btn-outline-primary">
+                    Manage Workout Plans
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Metric Cards (6 cards in a responsive grid) -->
+    <div class="row g-3 mb-4">
+        <!-- Total Members -->
+        <div class="col-sm-6 col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-start border-primary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Total Members</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-6 fw-bold text-dark">@Model.TotalMembers</span>
+                        <a asp-controller="MemberManagement" asp-action="Index" class="btn btn-sm btn-light">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Trainers -->
+        <div class="col-sm-6 col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Total Trainers</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-6 fw-bold text-dark">@Model.TotalTrainers</span>
+                        <a asp-controller="TrainerManagement" asp-action="Index" class="btn btn-sm btn-light">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Membership Plans -->
+        <div class="col-sm-6 col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-start border-secondary border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Total Plans</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-6 fw-bold text-dark">@Model.TotalMembershipPlans</span>
+                        <a asp-controller="MembershipPlanManagement" asp-action="Index" class="btn btn-sm btn-light">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Memberships -->
+        <div class="col-sm-6 col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-start border-success border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Active Memberships</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-6 fw-bold text-success">@Model.ActiveMemberships</span>
+                        <a asp-controller="MembershipManagement" asp-action="Index" class="btn btn-sm btn-light">View</a>
+                    </div>
+                    <div class="text-muted small mt-1">Based on current dates</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Payments -->
+        <div class="col-sm-6 col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-start border-warning border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Total Payments</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-6 fw-bold text-dark">@Model.TotalPayments</span>
+                        <a asp-controller="PaymentManagement" asp-action="Index" class="btn btn-sm btn-light">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Workout Plans -->
+        <div class="col-sm-6 col-lg-4">
+            <div class="card shadow-sm border-0 h-100 border-start border-dark border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Workout Plans</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-6 fw-bold text-dark">@Model.TotalWorkoutPlans</span>
+                        <a asp-controller="WorkoutPlanManagement" asp-action="Index" class="btn btn-sm btn-light">View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Tables Row -->
+    <div class="row g-4 mb-4">
+        <!-- Recent Members -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold">Recent Members</h5>
+                    <a asp-controller="MemberManagement" asp-action="Index" class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.RecentMembers.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var member in Model.RecentMembers)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="MemberManagement" asp-action="Details" asp-route-id="@member.MemberId" class="fw-semibold text-decoration-none text-dark">
+                                                    @member.FullName
+                                                </a>
+                                            </td>
+                                            <td class="text-muted small">@member.Email</td>
+                                            <td class="text-muted small">@member.Phone</td>
+                                            <td class="text-nowrap small">@member.JoinDate.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p class="mb-0">No members registered yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold">Recent Payments</h5>
+                    <a asp-controller="PaymentManagement" asp-action="Index" class="btn btn-sm btn-outline-secondary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.RecentPayments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Member</th>
+                                        <th>Plan</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var payment in Model.RecentPayments)
+                                    {
+                                        <tr>
+                                            <td class="text-nowrap small">@payment.PaymentDate.ToString("yyyy-MM-dd")</td>
+                                            <td>
+                                                <span class="fw-semibold">@payment.Member?.FullName</span>
+                                            </td>
+                                            <td class="text-muted small">
+                                                @(payment.Membership?.MembershipPlan?.Name ?? $"Membership #{payment.MembershipId}")
+                                            </td>
+                                            <td class="fw-bold text-success text-nowrap">
+                                                $@payment.Amount.ToString("0.00")
+                                            </td>
+                                            <td>
+                                                @if (payment.Status == "Paid")
+                                                {
+                                                    <span class="badge bg-success">Paid</span>
+                                                }
+                                                else if (payment.Status == "Pending")
+                                                {
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                }
+                                                else if (payment.Status == "Failed")
+                                                {
+                                                    <span class="badge bg-danger">Failed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">@payment.Status</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <p class="mb-0">No payments recorded yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </div>
 </div>
