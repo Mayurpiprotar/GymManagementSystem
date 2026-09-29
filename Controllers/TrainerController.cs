@@ -1,6 +1,7 @@
 using GymManagementSystem.Data;
 using GymManagementSystem.Models;
 using GymManagementSystem.Models.ViewModels;
+using GymManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -44,6 +45,26 @@ public class TrainerController : Controller
             });
         }
 
+        var today = DateTime.Today;
+
+        // Load memberships assigned to this trainer (Part O: Trainer sees assigned members)
+        var assignedMemberships = await _context.Memberships
+            .AsNoTracking()
+            .Include(m => m.Member)
+            .Include(m => m.MembershipPlan)
+            .Include(m => m.TrainingGoalSpecialization)
+            .Include(m => m.Payments)
+            .Where(m => m.AssignedTrainerId == trainer.TrainerId)
+            .OrderByDescending(m => m.StartDate)
+            .ToListAsync();
+
+        foreach (var ms in assignedMemberships)
+        {
+            ms.Status = MembershipStatusResolver.ResolveStatus(ms, today);
+        }
+
+        var activeAssignedMembersCount = assignedMemberships.Count(ms => ms.Status == GymConstants.MembershipStatuses.Active);
+
         // Count workout plans assigned to this trainer
         var assignedWorkoutPlansCount = await _context.WorkoutPlans
             .CountAsync(wp => wp.TrainerId == trainer.TrainerId);
@@ -74,6 +95,8 @@ public class TrainerController : Controller
             Phone = trainer.Phone,
             AssignedWorkoutPlansCount = assignedWorkoutPlansCount,
             UniqueAssignedMembersCount = uniqueMembersCount,
+            ActiveAssignedMembersCount = activeAssignedMembersCount,
+            AssignedMemberships = assignedMemberships,
             RecentWorkoutPlans = recentWorkoutPlans
         };
 

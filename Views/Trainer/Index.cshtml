@@ -65,7 +65,20 @@
 
     <!-- Summary Statistics Row -->
     <div class="row g-3 mb-4">
-        <div class="col-sm-6">
+        <div class="col-sm-4">
+            <div class="card shadow-sm border-0 border-start border-info border-4">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold mb-1">Active Assigned Clients</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="display-5 fw-bold text-info">@Model.ActiveAssignedMembersCount</span>
+                        <span class="badge bg-info-subtle text-dark">Active Workload</span>
+                    </div>
+                    <div class="text-muted small mt-1">Currently coaching members</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
             <div class="card shadow-sm border-0 border-start border-primary border-4">
                 <div class="card-body">
                     <div class="text-muted small text-uppercase fw-semibold mb-1">Assigned Workout Plans</div>
@@ -78,7 +91,7 @@
             </div>
         </div>
 
-        <div class="col-sm-6">
+        <div class="col-sm-4">
             <div class="card shadow-sm border-0 border-start border-success border-4">
                 <div class="card-body">
                     <div class="text-muted small text-uppercase fw-semibold mb-1">Unique Members Trained</div>
@@ -86,9 +99,102 @@
                         <span class="display-5 fw-bold text-success">@Model.UniqueAssignedMembersCount</span>
                         <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-sm btn-light">View Members</a>
                     </div>
-                    <div class="text-muted small mt-1">Distinct members assigned to your plans</div>
+                    <div class="text-muted small mt-1">Distinct members trained</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Assigned Clients / Members Table (Part O: Trainer assignment view) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title mb-0 fw-semibold">My Assigned Members</h5>
+                <span class="text-muted small">Members currently assigned to you by gym administration</span>
+            </div>
+            <span class="badge bg-primary">@Model.AssignedMemberships.Count Assigned</span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.AssignedMemberships.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Member Name</th>
+                                <th>Contact Email</th>
+                                <th>Plan &amp; Validity</th>
+                                <th>Training Goal</th>
+                                <th>Level &amp; Preference</th>
+                                <th>Membership Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ms in Model.AssignedMemberships)
+                            {
+                                <tr>
+                                    <td class="fw-semibold text-dark">
+                                        @(ms.Member?.FullName ?? "Member")
+                                    </td>
+                                    <td>
+                                        <div class="small">@(ms.Member?.Email ?? "No email")</div>
+                                        @if (!string.IsNullOrWhiteSpace(ms.Member?.Phone))
+                                        {
+                                            <div class="text-muted small">@ms.Member?.Phone</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-medium">@(ms.MembershipPlan?.Name ?? "Membership")</div>
+                                        <div class="text-muted small">
+                                            @ms.StartDate.ToString("yyyy-MM-dd") to @ms.EndDate.ToString("yyyy-MM-dd")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-dark">
+                                            @(ms.TrainingGoalSpecialization?.Name ?? "General Fitness")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@(ms.ExperienceLevel ?? "Beginner")</span>
+                                        @if (!string.IsNullOrWhiteSpace(ms.TrainingPreference))
+                                        {
+                                            <div class="text-muted small mt-1 text-truncate" style="max-width: 160px;" title="@ms.TrainingPreference">
+                                                @ms.TrainingPreference
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (ms.Status == "Active")
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else if (ms.Status == "Upcoming")
+                                        {
+                                            <span class="badge bg-info text-dark">Upcoming</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@ms.Status</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <a asp-controller="TrainerWorkoutPlan" asp-action="Create" class="btn btn-sm btn-outline-primary">
+                                            + Workout Plan
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="p-4 text-center text-muted">
+                    <p class="mb-0">You currently have no gym members assigned to you.</p>
+                </div>
+            }
         </div>
     </div>
 

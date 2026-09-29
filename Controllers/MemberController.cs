@@ -572,6 +572,8 @@ public class MemberController : Controller
             .Include(m => m.MembershipPlan)
             .Include(m => m.TrainingGoalSpecialization)
             .Include(m => m.AssignedTrainer)
+                .ThenInclude(t => t!.TrainerSpecializations)
+                    .ThenInclude(ts => ts.Specialization)
             .Include(m => m.Payments)
             .Where(m => m.MemberId == member.MemberId)
             .OrderByDescending(m => m.StartDate)
@@ -606,6 +608,8 @@ public class MemberController : Controller
                 .ThenInclude(ms => ms.TrainingGoalSpecialization)
             .Include(m => m.Memberships)
                 .ThenInclude(ms => ms.AssignedTrainer)
+                    .ThenInclude(t => t!.TrainerSpecializations)
+                        .ThenInclude(ts => ts.Specialization)
             .Include(m => m.Memberships)
                 .ThenInclude(ms => ms.Payments)
             .FirstOrDefaultAsync(m => m.UserId == user.Id);

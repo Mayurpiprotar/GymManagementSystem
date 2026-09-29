@@ -13,5 +13,8 @@ public class TrainerDashboardViewModel
     public int AssignedWorkoutPlansCount { get; set; }
     public int UniqueAssignedMembersCount { get; set; }
 
+    public int ActiveAssignedMembersCount { get; set; }
+    public List<Membership> AssignedMemberships { get; set; } = new();
+
     public List<WorkoutPlan> RecentWorkoutPlans { get; set; } = new();
 }

@@ -99,7 +99,23 @@
                                 <dd class="col-7">
                                     @if (ms.AssignedTrainer != null)
                                     {
-                                        <span class="fw-bold text-success">@ms.AssignedTrainer.FullName</span>
+                                        <div>
+                                            <span class="fw-bold text-success">@ms.AssignedTrainer.FullName</span>
+                                            <span class="text-muted small d-block">@ms.AssignedTrainer.Email</span>
+                                        </div>
+                                        <div class="mt-1">
+                                            @if (ms.AssignedTrainer.TrainerSpecializations != null && ms.AssignedTrainer.TrainerSpecializations.Any())
+                                            {
+                                                @foreach (var ts in ms.AssignedTrainer.TrainerSpecializations)
+                                                {
+                                                    <span class="badge bg-light text-dark border me-1 small">@(ts.Specialization?.Name ?? "Fitness")</span>
+                                                }
+                                            }
+                                            else if (!string.IsNullOrWhiteSpace(ms.AssignedTrainer.Specialization))
+                                            {
+                                                <span class="badge bg-light text-dark border small">@ms.AssignedTrainer.Specialization</span>
+                                            }
+                                        </div>
                                     }
                                     else
                                     {

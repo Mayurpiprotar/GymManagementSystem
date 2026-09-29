@@ -1,0 +1,335 @@
+@model GymManagementSystem.Models.ViewModels.TrainerAssignmentListViewModel
+
+@{
+    ViewData["Title"] = "Trainer Matching & Assignments";
+}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-1 fw-bold text-dark">Trainer Matching &amp; Assignments</h1>
+            <p class="text-muted mb-0">
+                Review eligible active memberships, examine AI-balanced workload recommendations, and finalize trainer assignments.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="TrainerManagement" asp-action="Index" class="btn btn-outline-secondary">
+                Manage Trainers
+            </a>
+            <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-primary">
+                Admin Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Feedback Alerts -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <span class="fw-semibold">Success:</span> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span class="fw-semibold">Error:</span> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Metric Counter Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-primary border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Total Eligible</div>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="display-6 fw-bold text-primary">@Model.TotalEligibleCount</span>
+                        <span class="badge bg-primary-subtle text-primary">Active + Paid</span>
+                    </div>
+                    <div class="text-muted small mt-1">Ready for coaching</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-warning border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Needs Assignment</div>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="display-6 fw-bold text-warning">@Model.UnassignedCount</span>
+                        <span class="badge bg-warning-subtle text-warning">Unassigned</span>
+                    </div>
+                    <div class="text-muted small mt-1">Pending Admin decision</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-success border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Currently Assigned</div>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="display-6 fw-bold text-success">@Model.AssignedCount</span>
+                        <span class="badge bg-success-subtle text-success">Assigned</span>
+                    </div>
+                    <div class="text-muted small mt-1">Can reassign if needed</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card shadow-sm border-0 border-start border-secondary border-4 h-100">
+                <div class="card-body">
+                    <div class="text-muted small text-uppercase fw-semibold">Ineligible Subscriptions</div>
+                    <div class="d-flex justify-content-between align-items-center mt-1">
+                        <span class="display-6 fw-bold text-secondary">@Model.IneligibleCount</span>
+                        <span class="badge bg-secondary-subtle text-secondary">Informational</span>
+                    </div>
+                    <div class="text-muted small mt-1">Pending payment/dates</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Navigation Tabs -->
+    <ul class="nav nav-pills mb-4">
+        <li class="nav-item">
+            <a class="nav-link @(Model.Filter == "all" ? "active" : "")" asp-action="Index" asp-route-filter="all">
+                All Eligible (@Model.TotalEligibleCount)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.Filter == "unassigned" ? "active" : "")" asp-action="Index" asp-route-filter="unassigned">
+                Needs Trainer (@Model.UnassignedCount)
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(Model.Filter == "assigned" ? "active" : "")" asp-action="Index" asp-route-filter="assigned">
+                Assigned / Reassign (@Model.AssignedCount)
+            </a>
+        </li>
+    </ul>
+
+    <!-- Eligible Memberships Table Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 fw-bold">
+                Eligible Memberships
+                <span class="text-muted fs-6 fw-normal ms-2">(Status: Active &bull; Payment: Verified Paid &bull; Training Goal: Selected)</span>
+            </h5>
+            <span class="badge bg-light text-dark border">@Model.EligibleMemberships.Count shown</span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.EligibleMemberships.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Order #</th>
+                                <th>Member</th>
+                                <th>Membership Plan</th>
+                                <th>Training Goal &amp; Preferences</th>
+                                <th>Current Status</th>
+                                <th>Assigned Trainer</th>
+                                <th>Top Recommendation</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.EligibleMemberships)
+                            {
+                                <tr>
+                                    <td class="text-muted small fw-semibold">#@item.MembershipId</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">@item.MemberName</div>
+                                        <div class="text-muted small">@item.MemberEmail</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-primary">@item.PlanName</div>
+                                        <div class="text-muted small">
+                                            @item.StartDate.ToString("yyyy-MM-dd") to @item.EndDate.ToString("yyyy-MM-dd")
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <span class="badge bg-info text-dark">@item.TrainingGoalName</span>
+                                        </div>
+                                        <div class="text-muted small mt-1">
+                                            <span class="badge bg-light text-dark border">@item.ExperienceLevel</span>
+                                            @if (!string.IsNullOrWhiteSpace(item.TrainingPreference))
+                                            {
+                                                <span class="ms-1" title="@item.TrainingPreference">
+                                                    @(item.TrainingPreference.Length > 20 ? item.TrainingPreference.Substring(0, 20) + "..." : item.TrainingPreference)
+                                                </span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">@item.CanonicalStatus</span>
+                                        <span class="badge bg-light text-success border border-success">Paid</span>
+                                    </td>
+                                    <td>
+                                        @if (item.IsAssigned)
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
+                                                &#10003; @item.AssignedTrainerName
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning-subtle text-dark border border-warning px-2 py-1">
+                                                &#9888; Not Assigned
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (item.RecommendedTrainer != null)
+                                        {
+                                            <div class="small">
+                                                <span class="fw-bold text-dark">@item.RecommendedTrainer.FullName</span>
+                                                <span class="badge bg-light text-dark border ms-1">
+                                                    Active: @item.RecommendedTrainer.ActiveWorkload
+                                                </span>
+                                            </div>
+                                            <div class="text-muted small">
+                                                <span class="badge bg-primary-subtle text-primary">Exact Match</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small fst-italic">No exact match available</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        @if (item.IsAssigned)
+                                        {
+                                            <a asp-action="Assign" asp-route-id="@item.MembershipId" class="btn btn-sm btn-outline-primary">
+                                                Reassign Trainer
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <a asp-action="Assign" asp-route-id="@item.MembershipId" class="btn btn-sm btn-primary">
+                                                Assign Trainer &rarr;
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5 text-muted">
+                    <p class="mb-1 fw-semibold fs-5">No memberships match the selected filter.</p>
+                    <p class="small text-muted mb-0">
+                        Ensure memberships have confirmed Paid payments and active dates to become eligible for trainer assignment.
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Informational Accordion: Ineligible Memberships -->
+    <div class="accordion mb-4" id="ineligibleAccordion">
+        <div class="accordion-item border shadow-sm">
+            <h2 class="accordion-header" id="headingIneligible">
+                <button class="accordion-button collapsed bg-light py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapseIneligible" aria-expanded="false" aria-controls="collapseIneligible">
+                    <span class="fw-semibold text-dark">
+                        Informational: Ineligible Memberships (@Model.IneligibleCount)
+                    </span>
+                    <span class="badge bg-secondary ms-2 small">Explain why they cannot be assigned</span>
+                </button>
+            </h2>
+            <div id="collapseIneligible" class="accordion-collapse collapse" aria-labelledby="headingIneligible" data-bs-parent="#ineligibleAccordion">
+                <div class="accordion-body p-0">
+                    @if (Model.IneligibleMemberships.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Order #</th>
+                                        <th>Member</th>
+                                        <th>Plan</th>
+                                        <th>Canonical Status</th>
+                                        <th>Payment Verified</th>
+                                        <th>Training Goal</th>
+                                        <th>Ineligibility Explanation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var inel in Model.IneligibleMemberships)
+                                    {
+                                        <tr>
+                                            <td class="text-muted small">#@inel.MembershipId</td>
+                                            <td>
+                                                <span class="fw-semibold">@inel.MemberName</span>
+                                                <span class="text-muted small d-block">@inel.MemberEmail</span>
+                                            </td>
+                                            <td class="small">@inel.PlanName</td>
+                                            <td>
+                                                @if (inel.CanonicalStatus == "PendingPayment")
+                                                {
+                                                    <span class="badge bg-warning text-dark">PendingPayment</span>
+                                                }
+                                                else if (inel.CanonicalStatus == "Upcoming")
+                                                {
+                                                    <span class="badge bg-info text-dark">Upcoming</span>
+                                                }
+                                                else if (inel.CanonicalStatus == "Expired")
+                                                {
+                                                    <span class="badge bg-secondary">Expired</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark border">@inel.CanonicalStatus</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (inel.HasPaidPayment)
+                                                {
+                                                    <span class="badge bg-success">Yes (Paid)</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">No (Unpaid)</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (inel.HasTrainingGoal)
+                                                {
+                                                    <span class="badge bg-success">Selected</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Missing</span>
+                                                }
+                                            </td>
+                                            <td class="text-danger small">
+                                                @inel.IneligibilityReason
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-3 text-center text-muted small">
+                            All current subscriptions in the database meet trainer assignment criteria.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
