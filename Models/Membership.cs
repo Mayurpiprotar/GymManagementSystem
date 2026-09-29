@@ -20,6 +20,20 @@ public class Membership
     [StringLength(20)]
     public string Status { get; set; } = string.Empty;
 
+    // Structured Training Preferences
+    public int? TrainingGoalSpecializationId { get; set; }
+    public Specialization? TrainingGoalSpecialization { get; set; }
+
+    [StringLength(50)]
+    public string? ExperienceLevel { get; set; }
+
+    [StringLength(250)]
+    public string? TrainingPreference { get; set; }
+
+    // Trainer Assignment
+    public int? AssignedTrainerId { get; set; }
+    public Trainer? AssignedTrainer { get; set; }
+
     // Navigation properties
     public Member? Member { get; set; }
     public MembershipPlan? MembershipPlan { get; set; }

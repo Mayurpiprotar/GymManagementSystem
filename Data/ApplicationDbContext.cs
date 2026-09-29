@@ -17,6 +17,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Membership> Memberships { get; set; } = null!;
     public DbSet<Payment> Payments { get; set; } = null!;
     public DbSet<WorkoutPlan> WorkoutPlans { get; set; } = null!;
+    public DbSet<Specialization> Specializations { get; set; } = null!;
+    public DbSet<TrainerSpecialization> TrainerSpecializations { get; set; } = null!;
+    public DbSet<TrainerApplication> TrainerApplications { get; set; } = null!;
+    public DbSet<TrainerApplicationSpecialization> TrainerApplicationSpecializations { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -85,6 +89,66 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(t => t.User)
             .WithOne()
             .HasForeignKey<Trainer>(t => t.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 9. TrainerSpecialization (Many-to-Many: Trainer <-> Specialization)
+        modelBuilder.Entity<TrainerSpecialization>()
+            .HasKey(ts => new { ts.TrainerId, ts.SpecializationId });
+
+        modelBuilder.Entity<TrainerSpecialization>()
+            .HasOne(ts => ts.Trainer)
+            .WithMany(t => t.TrainerSpecializations)
+            .HasForeignKey(ts => ts.TrainerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TrainerSpecialization>()
+            .HasOne(ts => ts.Specialization)
+            .WithMany(s => s.TrainerSpecializations)
+            .HasForeignKey(ts => ts.SpecializationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 10. TrainerApplicationSpecialization (Many-to-Many: TrainerApplication <-> Specialization)
+        modelBuilder.Entity<TrainerApplicationSpecialization>()
+            .HasKey(tas => new { tas.TrainerApplicationId, tas.SpecializationId });
+
+        modelBuilder.Entity<TrainerApplicationSpecialization>()
+            .HasOne(tas => tas.TrainerApplication)
+            .WithMany(ta => ta.ApplicationSpecializations)
+            .HasForeignKey(tas => tas.TrainerApplicationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TrainerApplicationSpecialization>()
+            .HasOne(tas => tas.Specialization)
+            .WithMany(s => s.ApplicationSpecializations)
+            .HasForeignKey(tas => tas.SpecializationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 11. Trainer -> TrainerApplication (One-to-One / Optional: 1 -> 0..1)
+        modelBuilder.Entity<Trainer>()
+            .HasOne(t => t.Application)
+            .WithOne(a => a.CreatedTrainer)
+            .HasForeignKey<Trainer>(t => t.ApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 12. Membership -> Specialization (Training Goal)
+        modelBuilder.Entity<Membership>()
+            .HasOne(m => m.TrainingGoalSpecialization)
+            .WithMany(s => s.Memberships)
+            .HasForeignKey(m => m.TrainingGoalSpecializationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 13. Membership -> Trainer (Assigned Trainer)
+        modelBuilder.Entity<Membership>()
+            .HasOne(m => m.AssignedTrainer)
+            .WithMany(t => t.AssignedMemberships)
+            .HasForeignKey(m => m.AssignedTrainerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 14. TrainerApplication -> ApplicationUser (Reviewed By Admin)
+        modelBuilder.Entity<TrainerApplication>()
+            .HasOne(ta => ta.ReviewedByAdmin)
+            .WithMany()
+            .HasForeignKey(ta => ta.ReviewedByAdminId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

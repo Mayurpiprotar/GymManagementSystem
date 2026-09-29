@@ -31,6 +31,12 @@ public class Trainer
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }
 
+    // Trainer Application linkage (1 -> 0..1)
+    public int? ApplicationId { get; set; }
+    public TrainerApplication? Application { get; set; }
+
     // Navigation properties
+    public ICollection<TrainerSpecialization> TrainerSpecializations { get; set; } = new List<TrainerSpecialization>();
+    public ICollection<Membership> AssignedMemberships { get; set; } = new List<Membership>();
     public ICollection<WorkoutPlan> WorkoutPlans { get; set; } = new List<WorkoutPlan>();
 }

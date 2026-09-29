@@ -24,6 +24,12 @@ public class Payment
     [StringLength(20)]
     public string Status { get; set; } = string.Empty;
 
+    [StringLength(100)]
+    public string? TransactionId { get; set; }
+
+    [StringLength(250)]
+    public string? Notes { get; set; }
+
     // Navigation properties
     public Member? Member { get; set; }
     public Membership? Membership { get; set; }
