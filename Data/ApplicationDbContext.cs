@@ -150,5 +150,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(ta => ta.ReviewedByAdminId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // 15. Seed standard Specializations (7 categories)
+        modelBuilder.Entity<Specialization>().HasData(
+            new Specialization { SpecializationId = 1, Name = "Strength & Hypertrophy", Description = "Strength development and muscle hypertrophy training." },
+            new Specialization { SpecializationId = 2, Name = "Weight Loss & Fat Loss", Description = "Training focused on calorie expenditure, conditioning and fat-loss goals." },
+            new Specialization { SpecializationId = 3, Name = "General Fitness", Description = "General health, fitness and physical conditioning." },
+            new Specialization { SpecializationId = 4, Name = "Muscle Building", Description = "Muscle development and structured resistance training." },
+            new Specialization { SpecializationId = 5, Name = "Functional Training", Description = "Movement quality, functional strength and conditioning." },
+            new Specialization { SpecializationId = 6, Name = "Flexibility & Mobility", Description = "Mobility, flexibility and movement improvement." },
+            new Specialization { SpecializationId = 7, Name = "Sports Conditioning", Description = "Sport-specific conditioning, agility and performance training." }
+        );
     }
 }
