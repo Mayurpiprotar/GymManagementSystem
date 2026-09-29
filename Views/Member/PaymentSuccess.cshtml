@@ -1,0 +1,85 @@
+@model GymManagementSystem.Models.Payment
+
+@{
+    ViewData["Title"] = "Payment Receipt";
+    var ms = Model.Membership;
+    var plan = ms?.MembershipPlan;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <div class="card-body">
+                    <!-- Success Icon -->
+                    <div class="mb-3">
+                        <span class="badge bg-success rounded-circle p-3 display-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                            </svg>
+                        </span>
+                    </div>
+
+                    <h2 class="h3 fw-bold text-dark mb-1">Payment Successful!</h2>
+                    <p class="text-muted small mb-4">Your gym membership transaction has been confirmed and activated.</p>
+
+                    <!-- Receipt Details Card -->
+                    <div class="card bg-light border-0 mb-4 text-start">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <span class="text-muted">Transaction ID:</span>
+                                <span class="fw-bold font-monospace text-dark">@Model.TransactionId</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <span class="text-muted">Amount Paid:</span>
+                                <span class="fw-bold text-success fs-5">₹@Model.Amount.ToString("0.00")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <span class="text-muted">Payment Date:</span>
+                                <span class="fw-semibold text-dark">@Model.PaymentDate.ToString("MMMM dd, yyyy")</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <span class="text-muted">Payment Method:</span>
+                                <span class="badge bg-secondary">@Model.PaymentMethod</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <span class="text-muted">Subscription Plan:</span>
+                                <span class="fw-semibold text-dark">@plan?.Name (@plan?.DurationInMonths @(plan?.DurationInMonths == 1 ? "month" : "months"))</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <span class="text-muted">Validity Period:</span>
+                                <span class="fw-semibold text-dark">@ms?.StartDate.ToString("yyyy-MM-dd") to @ms?.EndDate.ToString("yyyy-MM-dd")</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Membership Status:</span>
+                                <span class="badge bg-success fs-6 px-3 py-1">@ms?.Status</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success text-start py-3 mb-4 small">
+                        <strong>What's Next?</strong> Your training goal specialization is recorded as <strong>@(ms?.TrainingGoalSpecialization?.Name ?? "General Fitness")</strong>. When certified trainer matching is active, coaches with expertise in this discipline will be assigned to guide your workouts.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-action="Index" class="btn btn-primary btn-lg fw-semibold">
+                            Go to Member Dashboard &rarr;
+                        </a>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <a asp-action="Payments" class="btn btn-outline-secondary w-100">
+                                    Payment History
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a asp-action="Memberships" class="btn btn-outline-secondary w-100">
+                                    My Memberships
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

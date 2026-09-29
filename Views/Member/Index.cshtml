@@ -10,12 +10,39 @@
             <h1 class="h2 mb-1">Member Dashboard</h1>
             <p class="text-muted mb-0">Welcome back, <span class="fw-semibold text-dark">@Model.MemberName</span>!</p>
         </div>
-        <div>
-            <span class="badge bg-light text-dark border px-3 py-2">
+        <div class="d-flex gap-2">
+            <a asp-action="Plans" class="btn btn-outline-primary">
+                Browse Plans
+            </a>
+            <span class="badge bg-light text-dark border px-3 py-2 d-flex align-items-center">
                 Member ID: #@Model.MemberId
             </span>
         </div>
     </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["InfoMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="row">
         <!-- Membership Card Column -->
@@ -27,22 +54,22 @@
 
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">Current Membership</h5>
+                        <h5 class="card-title mb-0 fw-bold">Current Membership</h5>
                         @if (cur.Status == "Active")
                         {
-                            <span class="badge bg-success fs-6">Active</span>
+                            <span class="badge bg-success fs-6 px-3 py-1">Active</span>
                         }
                         else if (cur.Status == "Upcoming")
                         {
-                            <span class="badge bg-info text-dark fs-6">Upcoming</span>
+                            <span class="badge bg-info text-dark fs-6 px-3 py-1">Upcoming</span>
                         }
-                        else if (cur.Status == "Expired")
+                        else if (cur.Status == "PendingPayment")
                         {
-                            <span class="badge bg-secondary fs-6">Expired</span>
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-1">Pending Payment</span>
                         }
                         else
                         {
-                            <span class="badge bg-light text-dark fs-6">@cur.Status</span>
+                            <span class="badge bg-secondary fs-6 px-3 py-1">Expired</span>
                         }
                     </div>
                     <div class="card-body p-4">
@@ -54,18 +81,18 @@
                                 </p>
                             </div>
                             <div class="col-md-5 text-md-end mt-3 mt-md-0">
-                                <span class="display-6 fw-bold text-success">$@plan?.Price.ToString("0.00")</span>
+                                <span class="display-6 fw-bold text-success">₹@plan?.Price.ToString("0.00")</span>
                                 <div class="text-muted small">for @plan?.DurationInMonths @(plan?.DurationInMonths == 1 ? "month" : "months")</div>
                             </div>
                         </div>
 
                         <hr />
 
-                        <div class="row g-3">
+                        <div class="row g-3 mb-4">
                             <div class="col-sm-6">
                                 <div class="p-3 bg-light rounded">
                                     <div class="text-muted small">Start Date</div>
-                                    <div class="fw-bold fs-5">@cur.StartDate.ToString("MMMM dd, yyyy")</div>
+                                    <div class="fw-bold fs-5 text-dark">@cur.StartDate.ToString("MMMM dd, yyyy")</div>
                                 </div>
                             </div>
                             <div class="col-sm-6">
@@ -76,84 +103,86 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 p-3 bg-light rounded small text-muted">
-                            <strong>Status:</strong>
-                            @if (cur.Status == "Active")
-                            {
-                                <span>Your membership is currently active. Enjoy full access to all included facilities and classes!</span>
-                            }
-                            else if (cur.Status == "Upcoming")
-                            {
-                                <span>Your membership is scheduled to begin on <strong>@cur.StartDate.ToString("yyyy-MM-dd")</strong>.</span>
-                            }
-                            else
-                            {
-                                <span>Your membership has expired. Please visit the front desk to renew your plan.</span>
-                            }
+                        <!-- Structured Training Preferences & Coach Assignment -->
+                        <div class="p-3 border rounded mb-3 bg-light">
+                            <h6 class="fw-bold text-dark mb-2">Training Profile &amp; Coach Assignment</h6>
+                            <dl class="row small mb-0">
+                                <dt class="col-sm-4 text-muted">Training Goal:</dt>
+                                <dd class="col-sm-8 fw-semibold">
+                                    <span class="badge bg-info text-dark">
+                                        @(cur.TrainingGoalSpecialization?.Name ?? "General Fitness")
+                                    </span>
+                                </dd>
+
+                                <dt class="col-sm-4 text-muted">Experience Level:</dt>
+                                <dd class="col-sm-8">@(cur.ExperienceLevel ?? "Beginner")</dd>
+
+                                <dt class="col-sm-4 text-muted">Preferences:</dt>
+                                <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(cur.TrainingPreference) ? "General Workout" : cur.TrainingPreference)</dd>
+
+                                <dt class="col-sm-4 text-muted">Assigned Coach:</dt>
+                                <dd class="col-sm-8">
+                                    @if (cur.AssignedTrainer != null)
+                                    {
+                                        <span class="fw-bold text-success">@cur.AssignedTrainer.FullName</span>
+                                        <span class="text-muted small ms-1">(@cur.AssignedTrainer.Email)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">Trainer assignment pending</span>
+                                    }
+                                </dd>
+                            </dl>
                         </div>
+
+                        <!-- Status Notification & Actions -->
+                        @if (cur.Status == "PendingPayment")
+                        {
+                            <div class="alert alert-warning d-flex justify-content-between align-items-center mb-0">
+                                <div>
+                                    <strong>Payment Required:</strong> Your membership order is pending payment.
+                                </div>
+                                <a asp-action="Checkout" asp-route-id="@cur.MembershipId" class="btn btn-warning text-dark fw-semibold">
+                                    Complete Payment &rarr;
+                                </a>
+                            </div>
+                        }
+                        else if (cur.Status == "Active")
+                        {
+                            <div class="p-3 bg-light rounded small text-muted">
+                                <strong>Status:</strong> Your membership is active. Enjoy full facility access and customized workout coaching!
+                            </div>
+                        }
+                        else if (cur.Status == "Upcoming")
+                        {
+                            <div class="p-3 bg-light rounded small text-muted">
+                                <strong>Status:</strong> Your membership is scheduled to activate on <strong>@cur.StartDate.ToString("yyyy-MM-dd")</strong>.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-secondary d-flex justify-content-between align-items-center mb-0">
+                                <div>Your membership has expired.</div>
+                                <a asp-action="Plans" class="btn btn-primary btn-sm">Renew / Choose Plan</a>
+                            </div>
+                        }
                     </div>
                 </div>
-
-                @if (Model.AllMemberships.Count > 1)
-                {
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-light py-3">
-                            <h6 class="card-title mb-0">Membership History</h6>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Plan</th>
-                                            <th>Duration</th>
-                                            <th>Start Date</th>
-                                            <th>End Date</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var hist in Model.AllMemberships)
-                                        {
-                                            <tr>
-                                                <td class="fw-medium">@hist.MembershipPlan?.Name</td>
-                                                <td>@hist.MembershipPlan?.DurationInMonths @(hist.MembershipPlan?.DurationInMonths == 1 ? "month" : "months")</td>
-                                                <td>@hist.StartDate.ToString("yyyy-MM-dd")</td>
-                                                <td>@hist.EndDate.ToString("yyyy-MM-dd")</td>
-                                                <td>
-                                                    @if (hist.Status == "Active")
-                                                    {
-                                                        <span class="badge bg-success">Active</span>
-                                                    }
-                                                    else if (hist.Status == "Upcoming")
-                                                    {
-                                                        <span class="badge bg-info text-dark">Upcoming</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-secondary">Expired</span>
-                                                    }
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                }
             }
             else
             {
-                <div class="card shadow-sm border-0">
+                <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body text-center py-5">
                         <div class="mb-3">
                             <span class="display-4 text-warning">&#9888;</span>
                         </div>
                         <h4 class="fw-bold mb-2">No active membership found.</h4>
                         <p class="text-muted mb-4">
-                            You currently do not have an active gym membership subscription. Please contact the front desk or gym administration to enroll in a membership plan.
+                            You currently do not have an active gym membership subscription. Browse our membership plans and select your training preferences to join!
                         </p>
+                        <a asp-action="Plans" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                            Browse Membership Plans &rarr;
+                        </a>
                     </div>
                 </div>
             }
@@ -161,8 +190,8 @@
             <!-- Payment History Section -->
             <div class="card shadow-sm border-0 mt-4">
                 <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Payment History</h5>
-                    <span class="badge bg-secondary">@Model.PaymentHistory.Count Record(s)</span>
+                    <h5 class="card-title mb-0 fw-bold">Recent Payment History</h5>
+                    <a asp-action="Payments" class="btn btn-sm btn-outline-secondary">View All</a>
                 </div>
                 <div class="card-body p-0">
                     @if (Model.PaymentHistory != null && Model.PaymentHistory.Any())
@@ -172,45 +201,45 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th>Date</th>
-                                        <th>Membership / Plan</th>
+                                        <th>Plan</th>
                                         <th>Amount</th>
                                         <th>Method</th>
                                         <th>Status</th>
+                                        <th class="text-end">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var payment in Model.PaymentHistory)
+                                    @foreach (var payment in Model.PaymentHistory.Take(5))
                                     {
                                         <tr>
                                             <td>@payment.PaymentDate.ToString("yyyy-MM-dd")</td>
-                                            <td>
-                                                <span class="fw-medium">@payment.Membership?.MembershipPlan?.Name</span>
-                                                <div class="text-muted small">Membership #@payment.MembershipId</div>
+                                            <td class="fw-semibold">
+                                                @(payment.Membership?.MembershipPlan?.Name ?? "Membership")
                                             </td>
-                                            <td class="fw-bold text-success">$@payment.Amount.ToString("0.00")</td>
+                                            <td class="fw-bold @(payment.Status == "Paid" ? "text-success" : "text-dark")">
+                                                ₹@payment.Amount.ToString("0.00")
+                                            </td>
                                             <td>
-                                                <span class="badge bg-light text-dark border">@payment.PaymentMethod</span>
+                                                <span class="badge bg-secondary">@payment.PaymentMethod</span>
                                             </td>
                                             <td>
                                                 @if (payment.Status == "Paid")
                                                 {
                                                     <span class="badge bg-success">Paid</span>
                                                 }
-                                                else if (payment.Status == "Pending")
+                                                else
                                                 {
-                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                    <span class="badge bg-danger">@payment.Status</span>
                                                 }
-                                                else if (payment.Status == "Failed")
+                                            </td>
+                                            <td class="text-end">
+                                                @if (payment.Status == "Paid")
                                                 {
-                                                    <span class="badge bg-danger">Failed</span>
-                                                }
-                                                else if (payment.Status == "Refunded")
-                                                {
-                                                    <span class="badge bg-secondary">Refunded</span>
+                                                    <a asp-action="PaymentSuccess" asp-route-id="@payment.PaymentId" class="btn btn-sm btn-outline-primary">Receipt</a>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-light text-dark border">@payment.Status</span>
+                                                    <a asp-action="Checkout" asp-route-id="@payment.MembershipId" class="btn btn-sm btn-outline-warning text-dark">Retry</a>
                                                 }
                                             </td>
                                         </tr>
@@ -221,91 +250,77 @@
                     }
                     else
                     {
-                        <div class="p-4 text-center text-muted">
-                            <p class="mb-0">No payment history found.</p>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Workout Plans Section -->
-            <div class="card shadow-sm border-0 mt-4">
-                <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Workout Plans</h5>
-                    <span class="badge bg-secondary">@Model.WorkoutPlans.Count Plan(s)</span>
-                </div>
-                <div class="card-body p-0">
-                    @if (Model.WorkoutPlans != null && Model.WorkoutPlans.Any())
-                    {
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Plan Name</th>
-                                        <th>Assigned Trainer</th>
-                                        <th>Description</th>
-                                        <th>Created Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var plan in Model.WorkoutPlans)
-                                    {
-                                        <tr>
-                                            <td class="fw-semibold text-primary">@plan.PlanName</td>
-                                            <td>
-                                                <span class="fw-medium">@plan.Trainer?.FullName</span>
-                                                <div class="text-muted small">@plan.Trainer?.Specialization</div>
-                                            </td>
-                                            <td>
-                                                <span class="text-muted">@(string.IsNullOrWhiteSpace(plan.Description) ? "No description provided." : plan.Description)</span>
-                                            </td>
-                                            <td>@plan.CreatedDate.ToString("yyyy-MM-dd")</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="p-4 text-center text-muted">
-                            <p class="mb-0">No workout plans assigned yet.</p>
+                        <div class="text-center py-4 text-muted">
+                            No payment transactions recorded yet.
                         </div>
                     }
                 </div>
             </div>
         </div>
 
-        <!-- Profile & Account Info Column -->
-        <div class="col-lg-4 mb-4">
+        <!-- Right Side: Profile Summary & Workout Plans -->
+        <div class="col-lg-4">
+            <!-- Member Profile Card -->
             <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-light py-3">
-                    <h5 class="card-title mb-0">My Profile</h5>
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">My Profile</h5>
                 </div>
-                <div class="card-body p-4">
-                    <dl class="mb-0">
-                        <dt class="text-muted small">Full Name</dt>
-                        <dd class="fw-semibold mb-3">@Model.MemberName</dd>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style="width: 64px; height: 64px; font-size: 24px;">
+                            @(string.IsNullOrEmpty(Model.MemberName) ? "M" : Model.MemberName.Substring(0, 1).ToUpper())
+                        </div>
+                        <h5 class="fw-bold mt-2 mb-0">@Model.MemberName</h5>
+                        <p class="text-muted small">@Model.Email</p>
+                    </div>
 
-                        <dt class="text-muted small">Email Address</dt>
-                        <dd class="mb-3">@Model.Email</dd>
+                    <dl class="row small mb-0">
+                        <dt class="col-5 text-muted">Member Since</dt>
+                        <dd class="col-7 text-end">@Model.JoinDate.ToString("MMMM yyyy")</dd>
 
-                        <dt class="text-muted small">Phone Number</dt>
-                        <dd class="mb-3">@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</dd>
-
-                        <dt class="text-muted small">Member Since</dt>
-                        <dd class="mb-0">@Model.JoinDate.ToString("MMMM dd, yyyy")</dd>
+                        <dt class="col-5 text-muted">Contact Phone</dt>
+                        <dd class="col-7 text-end">@Model.Phone</dd>
                     </dl>
+
+                    <div class="d-grid gap-2 mt-3 pt-3 border-top">
+                        <a asp-action="Memberships" class="btn btn-sm btn-outline-primary">
+                            View All Subscriptions
+                        </a>
+                        <a asp-action="Payments" class="btn btn-sm btn-outline-secondary">
+                            View Payment Receipts
+                        </a>
+                    </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4 text-center">
-                    <h6 class="fw-semibold mb-2">Need Help?</h6>
-                    <p class="small text-muted mb-3">Questions about your membership, renewals, or gym access? Contact gym staff at the reception desk.</p>
-                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Logout</button>
-                    </form>
+            <!-- Workout Plans Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold">Assigned Workout Routines</h5>
+                    <span class="badge bg-secondary">@Model.WorkoutPlans.Count</span>
+                </div>
+                <div class="card-body">
+                    @if (Model.WorkoutPlans != null && Model.WorkoutPlans.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var wp in Model.WorkoutPlans)
+                            {
+                                <div class="list-group-item px-0 py-2">
+                                    <div class="fw-semibold text-dark">@wp.PlanName</div>
+                                    <div class="text-muted small">
+                                        Coach: @(wp.Trainer?.FullName ?? "Staff Coach") &bull; @wp.CreatedDate.ToString("yyyy-MM-dd")
+                                    </div>
+                                    <p class="small text-muted mb-0 mt-1">@wp.Description</p>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted small">
+                            No workout routines assigned yet. Your coach will prepare personalized routines once trainer matching completes.
+                        </div>
+                    }
                 </div>
             </div>
         </div>

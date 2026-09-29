@@ -1,0 +1,166 @@
+@model GymManagementSystem.Models.ViewModels.MembershipCheckoutViewModel
+
+@{
+    ViewData["Title"] = "Order Checkout";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">Order Checkout Review</h1>
+                    <p class="text-muted mb-0">Order #@Model.MembershipId &bull; Review your subscription and training preferences before final payment.</p>
+                </div>
+                <div>
+                    <a asp-action="Plans" class="btn btn-outline-secondary">
+                        Browse Other Plans
+                    </a>
+                </div>
+            </div>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h5 class="alert-heading fw-bold mb-1">Payment Not Completed</h5>
+                    <p class="mb-0">@TempData["ErrorMessage"]</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["InfoMessage"] != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    @TempData["InfoMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- ORDER SUMMARY CARD -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold">1. Subscription Summary</h5>
+                    <span class="badge bg-warning text-dark px-3 py-1">@Model.CanonicalStatus</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row align-items-center mb-3">
+                        <div class="col-sm-8">
+                            <h3 class="fw-bold text-dark mb-1">@Model.PlanName Plan</h3>
+                            <p class="text-muted small mb-0">@Model.PlanDescription</p>
+                        </div>
+                        <div class="col-sm-4 text-sm-end mt-2 mt-sm-0">
+                            <span class="display-6 fw-bold text-success">₹@Model.PlanPrice.ToString("0.00")</span>
+                            <div class="text-muted small">@Model.PlanDurationInMonths @(Model.PlanDurationInMonths == 1 ? "month" : "months") access</div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">Planned Start Date</div>
+                                <div class="fw-bold fs-5 text-dark">@Model.StartDate.ToString("MMMM dd, yyyy")</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded">
+                                <div class="text-muted small">Planned End Date</div>
+                                <div class="fw-bold fs-5 text-primary">@Model.EndDate.ToString("MMMM dd, yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRAINING PREFERENCES CARD -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">2. Your Training Preferences</h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Primary Training Goal</dt>
+                        <dd class="col-sm-8 fw-semibold text-dark">
+                            <span class="badge bg-info text-dark px-2 py-1 fs-6">@Model.TrainingGoalName</span>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Experience Level</dt>
+                        <dd class="col-sm-8 fw-semibold text-dark">@Model.ExperienceLevel</dd>
+
+                        <dt class="col-sm-4 text-muted">Training Preference</dt>
+                        <dd class="col-sm-8 text-dark">@Model.TrainingPreference</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- PREVIOUS PAYMENT ATTEMPTS (IF ANY) -->
+            @if (Model.PreviousPayments != null && Model.PreviousPayments.Any())
+            {
+                <div class="card shadow-sm border-0 mb-4 border-start border-danger border-4">
+                    <div class="card-header bg-white py-3">
+                        <h6 class="card-title mb-0 fw-bold text-danger">Prior Payment Attempts</h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless mb-0">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th>Date</th>
+                                        <th>Method</th>
+                                        <th>Transaction ID</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var prev in Model.PreviousPayments)
+                                    {
+                                        <tr>
+                                            <td class="small">@prev.PaymentDate.ToString("yyyy-MM-dd")</td>
+                                            <td class="small">@prev.PaymentMethod</td>
+                                            <td class="small text-muted font-monospace">@prev.TransactionId</td>
+                                            <td class="small fw-semibold">₹@prev.Amount.ToString("0.00")</td>
+                                            <td>
+                                                @if (prev.Status == "Paid")
+                                                {
+                                                    <span class="badge bg-success">Paid</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">@prev.Status</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- PAYMENT SUMMARY & ACTION -->
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body p-4 text-center">
+                    <div class="mb-3">
+                        <span class="text-muted small">Total Payable Amount</span>
+                        <div class="display-5 fw-bold text-success">₹@Model.PlanPrice.ToString("0.00")</div>
+                    </div>
+                    <p class="text-muted small mb-4">
+                        Payment will be processed via our college demonstration payment gateway. No real monetary transactions will occur.
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <a asp-action="DemoPayment" asp-route-id="@Model.MembershipId" class="btn btn-success btn-lg fw-semibold py-3 shadow-sm">
+                            Proceed to Demo Payment Gateway &rarr;
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            Save for Later &amp; Return to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,112 @@
+@model GymManagementSystem.Models.ViewModels.MembershipPurchaseViewModel
+
+@{
+    ViewData["Title"] = "Purchase Membership";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1">Select Training Preferences</h1>
+                    <p class="text-muted mb-0">Customize your workout preferences and goal specialization before checkout.</p>
+                </div>
+                <div>
+                    <a asp-action="Plans" class="btn btn-outline-secondary">
+                        &larr; Back to Plans
+                    </a>
+                </div>
+            </div>
+
+            <!-- Selected Plan Summary Card -->
+            <div class="card shadow-sm border-0 mb-4 bg-light">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary px-3 py-2 rounded-pill mb-2">Selected Plan</span>
+                            <h3 class="h4 fw-bold text-dark mb-1">@Model.PlanName</h3>
+                            <p class="text-muted small mb-0">Duration: <strong>@Model.PlanDurationInMonths @(Model.PlanDurationInMonths == 1 ? "month" : "months")</strong> &bull; @Model.PlanDescription</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="display-6 fw-bold text-success">₹@Model.PlanPrice.ToString("0.00")</span>
+                            <div class="text-muted small">Payable upon checkout</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferences Form Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form asp-action="Purchase" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="MembershipPlanId" />
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <!-- Training Goal Specialization -->
+                        <div class="mb-4">
+                            <label asp-for="TrainingGoalSpecializationId" class="form-label fw-semibold">
+                                Primary Training Goal <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="TrainingGoalSpecializationId" asp-items="Model.AvailableGoals" class="form-select form-select-lg">
+                                <option value="">-- Choose Your Fitness Goal --</option>
+                            </select>
+                            <div class="form-text">
+                                Your assigned trainer will be matched to your chosen specialization to deliver structured coaching.
+                            </div>
+                            <span asp-validation-for="TrainingGoalSpecializationId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Experience Level -->
+                        <div class="mb-4">
+                            <label asp-for="ExperienceLevel" class="form-label fw-semibold">
+                                Current Fitness Experience Level <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="ExperienceLevel" asp-items="Model.AvailableExperienceLevels" class="form-select form-select-lg">
+                                <option value="">-- Select Your Level --</option>
+                            </select>
+                            <div class="form-text">
+                                Helps our coaches tailor workout volume, intensity, and progressive overload.
+                            </div>
+                            <span asp-validation-for="ExperienceLevel" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Training Preference / Schedule Notes -->
+                        <div class="mb-4">
+                            <label asp-for="TrainingPreference" class="form-label fw-semibold">
+                                Training Preferences &amp; Schedule Notes <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="TrainingPreference" class="form-control" rows="3" maxlength="250" placeholder="e.g. Focus on strength training; preferred workout hours are mornings 7 AM - 9 AM; recovering from mild shoulder strain..."></textarea>
+                            <div class="form-text">
+                                Detail your availability, specific focus areas, or past injuries (max 250 characters).
+                            </div>
+                            <span asp-validation-for="TrainingPreference" class="text-danger small"></span>
+                        </div>
+
+                        <div class="alert alert-info py-2 small mb-4">
+                            <strong>Note:</strong> Submitting this step creates your order in a <em>Pending Payment</em> state. You will review the order details and proceed to the simulated payment gateway on the next screen.
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                                Proceed to Checkout Review &rarr;
+                            </button>
+                            <a asp-action="Plans" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

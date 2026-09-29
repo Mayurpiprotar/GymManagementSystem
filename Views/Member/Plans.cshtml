@@ -1,0 +1,108 @@
+@model IEnumerable<GymManagementSystem.Models.MembershipPlan>
+
+@{
+    ViewData["Title"] = "Membership Plans";
+    var hasActiveOrUpcoming = ViewData["HasActiveOrUpcoming"] as bool? ?? false;
+}
+
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-dark mb-2">Membership Plans</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 650px;">
+            Choose the subscription package that best aligns with your fitness objectives. Full gym floor access, locker rooms, and certified trainer matching included.
+        </p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show text-center" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-exclamation-triangle-fill me-2" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+            </svg>
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (hasActiveOrUpcoming)
+    {
+        <div class="alert alert-info text-center py-3 mb-4 shadow-sm">
+            <h5 class="alert-heading fw-bold mb-1">Active Membership in Good Standing</h5>
+            <p class="mb-0 small">
+                You currently hold an Active or Upcoming membership subscription. Normal new plan purchases are locked to prevent accidental double-billing. Plan renewal will be available through the renewal workflow.
+            </p>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <p class="text-muted">No membership plans are currently available for purchase. Please check back soon.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 justify-content-center">
+            @foreach (var plan in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 transition-card">
+                        <div class="card-header bg-white py-3 text-center border-0">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold">
+                                @plan.DurationInMonths @(plan.DurationInMonths == 1 ? "Month" : "Months") Access
+                            </span>
+                            <h3 class="card-title h4 fw-bold mt-3 mb-0 text-dark">@plan.Name</h3>
+                        </div>
+
+                        <div class="card-body text-center p-4">
+                            <div class="mb-4">
+                                <span class="display-5 fw-bold text-success">₹@plan.Price.ToString("0.00")</span>
+                                <div class="text-muted small mt-1">Full payment for @plan.DurationInMonths @(plan.DurationInMonths == 1 ? "month" : "months")</div>
+                            </div>
+
+                            <p class="text-muted mb-4 small">
+                                @(string.IsNullOrWhiteSpace(plan.Description) ? "Comprehensive gym facility access with customized workout planning and certified trainer matching." : plan.Description)
+                            </p>
+
+                            <ul class="list-unstyled text-start small text-muted mb-4 px-3">
+                                <li class="mb-2 d-flex align-items-center">
+                                    <span class="text-success me-2">&#10003;</span> All gym equipment &amp; facilities
+                                </li>
+                                <li class="mb-2 d-flex align-items-center">
+                                    <span class="text-success me-2">&#10003;</span> Certified trainer matching
+                                </li>
+                                <li class="mb-2 d-flex align-items-center">
+                                    <span class="text-success me-2">&#10003;</span> Tailored workout routine plan
+                                </li>
+                                <li class="d-flex align-items-center">
+                                    <span class="text-success me-2">&#10003;</span> Locker room &amp; shower amenities
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="card-footer bg-white border-0 p-4 pt-0">
+                            @if (hasActiveOrUpcoming)
+                            {
+                                <button class="btn btn-secondary w-100 py-2 disabled" disabled>
+                                    Already Subscribed
+                                </button>
+                            }
+                            else if (User.Identity?.IsAuthenticated == true && User.IsInRole("Member"))
+                            {
+                                <a asp-action="Purchase" asp-route-id="@plan.MembershipPlanId" class="btn btn-primary w-100 py-2 fw-semibold">
+                                    Choose Plan &rarr;
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Purchase", "Member", new { id = plan.MembershipPlanId })" class="btn btn-outline-primary w-100 py-2 fw-semibold">
+                                    Sign In to Purchase
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

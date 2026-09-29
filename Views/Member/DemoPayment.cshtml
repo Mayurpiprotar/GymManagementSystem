@@ -1,0 +1,99 @@
+@model GymManagementSystem.Models.ViewModels.MembershipCheckoutViewModel
+
+@{
+    ViewData["Title"] = "Demo Payment Gateway";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <!-- Simulated Payment Gateway Card -->
+            <div class="card shadow border-0">
+                <!-- Gateway Header -->
+                <div class="card-header bg-dark text-white py-3 text-center">
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-shield-lock-fill text-warning" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.513 2.444c.459.335.78.47 1.881.47s1.422-.135 1.881-.47a11.8 11.8 0 0 0 2.513-2.444c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m0 5a1.5 1.5 0 0 1 .5 2.915l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99A1.5 1.5 0 0 1 8 5"/>
+                        </svg>
+                        <h4 class="card-title mb-0 fw-bold">Demo Payment Gateway</h4>
+                    </div>
+                    <span class="badge bg-warning text-dark text-uppercase letter-spacing small">College Project Test Simulation</span>
+                </div>
+
+                <div class="card-body p-4">
+                    <!-- Important Disclaimer Alert -->
+                    <div class="alert alert-warning py-3 text-center mb-4">
+                        <strong class="d-block mb-1">Simulation Mode Active</strong>
+                        <span class="small">
+                            This is a demonstration payment environment for academic evaluation. <strong>No real banking credentials or money will be charged.</strong>
+                        </span>
+                    </div>
+
+                    <!-- Payment Details Table -->
+                    <div class="bg-light p-3 rounded mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Applicant / Member:</span>
+                            <span class="fw-semibold text-dark">@Model.MemberName</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Subscription Plan:</span>
+                            <span class="fw-semibold text-dark">@Model.PlanName (@Model.PlanDurationInMonths @(Model.PlanDurationInMonths == 1 ? "month" : "months"))</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Payment Method:</span>
+                            <span class="badge bg-secondary">Demo Gateway</span>
+                        </div>
+                        <hr class="my-2" />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold text-dark">Amount to Pay:</span>
+                            <span class="fs-4 fw-bold text-success">₹@Model.PlanPrice.ToString("0.00")</span>
+                        </div>
+                    </div>
+
+                    <!-- Form to Choose Outcome -->
+                    <form asp-action="ProcessDemoPayment" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="membershipId" value="@Model.MembershipId" />
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-dark">Select Simulated Payment Result:</label>
+                            
+                            <div class="form-check p-3 border rounded mb-2 bg-light">
+                                <input class="form-check-input" type="radio" name="simulateSuccess" id="optSuccess" value="true" checked />
+                                <label class="form-check-label fw-semibold text-success ms-2" for="optSuccess">
+                                    Simulate Successful Payment (Status: Paid)
+                                </label>
+                                <div class="small text-muted ms-4">
+                                    Generates a verified transaction ID and activates the membership immediately.
+                                </div>
+                            </div>
+
+                            <div class="form-check p-3 border rounded bg-light">
+                                <input class="form-check-input" type="radio" name="simulateSuccess" id="optFailure" value="false" />
+                                <label class="form-check-label fw-semibold text-danger ms-2" for="optFailure">
+                                    Simulate Payment Failure (Status: Failed)
+                                </label>
+                                <div class="small text-muted ms-4">
+                                    Logs a failed transaction. Membership remains PendingPayment and eligible for retry.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold py-3 shadow-sm">
+                                Pay ₹@Model.PlanPrice.ToString("0.00") (Demo Pay)
+                            </button>
+                            <a asp-action="Checkout" asp-route-id="@Model.MembershipId" class="btn btn-outline-secondary">
+                                Cancel &amp; Back to Checkout
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card-footer bg-light text-center py-3 text-muted small">
+                    Secured by Demo Gateway &bull; Reference Order #@Model.MembershipId
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
