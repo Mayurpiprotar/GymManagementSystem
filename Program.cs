@@ -1,5 +1,6 @@
 using GymManagementSystem.Data;
 using GymManagementSystem.Models;
+using GymManagementSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<TrainerDocumentStorage>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer("Server=.\\SQLEXPRESS;Database=GymManagementSystemDb;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True"));
