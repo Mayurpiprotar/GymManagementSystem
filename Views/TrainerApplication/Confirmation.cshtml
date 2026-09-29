@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Application Submitted";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-4">
+                        <span class="badge bg-success rounded-circle p-3 display-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
+                                <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z"/>
+                            </svg>
+                        </span>
+                    </div>
+
+                    <h2 class="card-title h3 mb-3 fw-bold text-dark">Application Received!</h2>
+                    
+                    <div class="alert alert-success text-start py-3 mb-4">
+                        <p class="mb-0 fw-semibold">
+                            Your trainer application has been submitted successfully. Your application is currently pending administrative review.
+                        </p>
+                    </div>
+
+                    <div class="text-start bg-light p-3 rounded mb-4 text-muted small">
+                        <h6 class="fw-bold text-dark mb-2">What happens next?</h6>
+                        <ul class="mb-0 ps-3">
+                            <li class="mb-1">Gym management will review your qualifications, experience, and uploaded certification documents.</li>
+                            <li class="mb-1">Upon administrative approval, your Trainer account and profile will be automatically activated.</li>
+                            <li>You will then be able to log in to the Trainer Portal using the email and password you provided during application.</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                            Return to Homepage
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-secondary">
+                            Go to Login Page
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

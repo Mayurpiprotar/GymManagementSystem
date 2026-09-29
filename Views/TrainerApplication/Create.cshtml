@@ -1,0 +1,167 @@
+@model GymManagementSystem.Models.ViewModels.TrainerApplicationCreateViewModel
+
+@{
+    ViewData["Title"] = "Apply as Trainer";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="card-title h4 mb-1">Apply to Join as a Trainer</h3>
+                    <p class="mb-0 small text-white-50">Submit your professional credentials and qualifications. All applications undergo administrative verification.</p>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @TempData["ErrorMessage"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        }
+
+                        <!-- SECTION 1: Personal & Contact Information -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold border-bottom pb-2 text-dark">
+                                <span class="badge bg-primary me-2">1</span>Personal &amp; Contact Details
+                            </h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="FullName" class="form-label fw-semibold"></label>
+                                    <input asp-for="FullName" class="form-control" placeholder="e.g. John Doe" />
+                                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Email" class="form-label fw-semibold"></label>
+                                    <input asp-for="Email" class="form-control" placeholder="e.g. trainer@example.com" />
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="Phone" class="form-label fw-semibold"></label>
+                                    <input asp-for="Phone" class="form-control" placeholder="e.g. 9876543210" />
+                                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="ExperienceYears" class="form-label fw-semibold"></label>
+                                    <input asp-for="ExperienceYears" class="form-control" type="number" min="0" max="50" placeholder="e.g. 5" />
+                                    <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: Professional Qualifications -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold border-bottom pb-2 text-dark">
+                                <span class="badge bg-primary me-2">2</span>Qualifications &amp; Experience
+                            </h5>
+                            <div class="mb-3">
+                                <label asp-for="QualificationsSummary" class="form-label fw-semibold"></label>
+                                <textarea asp-for="QualificationsSummary" class="form-control" rows="3" placeholder="Describe your coaching certifications, education, and past fitness experience (max 500 characters)..."></textarea>
+                                <span asp-validation-for="QualificationsSummary" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: Specializations Selection (Multi-select) -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold border-bottom pb-2 text-dark">
+                                <span class="badge bg-primary me-2">3</span>Training Specializations <span class="text-danger">*</span>
+                            </h5>
+                            <p class="text-muted small mb-3">Select one or more areas of expertise you are qualified to coach:</p>
+
+                            @if (Model.AvailableSpecializations != null && Model.AvailableSpecializations.Any())
+                            {
+                                <div class="row g-2">
+                                    @foreach (var spec in Model.AvailableSpecializations)
+                                    {
+                                        var isChecked = Model.SelectedSpecializationIds.Contains(spec.SpecializationId);
+                                        <div class="col-md-6">
+                                            <div class="form-check p-3 border rounded h-100 bg-light">
+                                                <input class="form-check-input" type="checkbox" name="SelectedSpecializationIds" value="@spec.SpecializationId" id="spec_@spec.SpecializationId" @(isChecked ? "checked" : "") />
+                                                <label class="form-check-label fw-semibold text-dark" for="spec_@spec.SpecializationId">
+                                                    @spec.Name
+                                                </label>
+                                                @if (!string.IsNullOrEmpty(spec.Description))
+                                                {
+                                                    <div class="text-muted small mt-1">@spec.Description</div>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            <span asp-validation-for="SelectedSpecializationIds" class="text-danger small d-block mt-2"></span>
+                        </div>
+
+                        <!-- SECTION 4: Certification Documents -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold border-bottom pb-2 text-dark">
+                                <span class="badge bg-primary me-2">4</span>Verification Documents
+                            </h5>
+                            <div class="alert alert-info py-2 small mb-3">
+                                <strong>Document requirements:</strong> Allowed formats are PDF, JPG, JPEG, and PNG. Maximum size is 5 MB per file. Uploads are strictly stored outside public web access for privacy.
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="CertificationDocument" class="form-label fw-semibold"></label>
+                                <input asp-for="CertificationDocument" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png" />
+                                <div class="form-text">Primary fitness trainer certificate, CPR/AED, or diploma (Required).</div>
+                                <span asp-validation-for="CertificationDocument" class="text-danger small"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="ExperienceDocument" class="form-label fw-semibold"></label>
+                                <input asp-for="ExperienceDocument" class="form-control" type="file" accept=".pdf,.jpg,.jpeg,.png" />
+                                <div class="form-text">Previous gym employment letter, client recommendations, or secondary certificate (Optional).</div>
+                                <span asp-validation-for="ExperienceDocument" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 5: Account Credentials -->
+                        <div class="mb-4">
+                            <h5 class="fw-bold border-bottom pb-2 text-dark">
+                                <span class="badge bg-primary me-2">5</span>Desired Login Password
+                            </h5>
+                            <p class="text-muted small mb-3">Specify the password for your trainer portal login. Your account will be activated automatically once approved by administration.</p>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="Password" class="form-label fw-semibold"></label>
+                                    <input asp-for="Password" class="form-control" placeholder="Minimum 6 characters" />
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
+                                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Re-enter password" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 pt-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold">
+                                Submit Application
+                            </button>
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
