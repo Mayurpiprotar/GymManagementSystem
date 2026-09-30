@@ -90,6 +90,15 @@
 
                         <dt class="col-sm-4 text-muted">Training Preference</dt>
                         <dd class="col-sm-8 text-dark">@Model.TrainingPreference</dd>
+
+                        @if (Model.HasAssignedTrainer)
+                        {
+                            <dt class="col-sm-4 text-muted">Assigned Coach</dt>
+                            <dd class="col-sm-8 text-success fw-bold">
+                                &#127947; @Model.AssignedTrainerName
+                                <span class="badge bg-success-subtle text-success border border-success ms-1">Preserved from Renewal</span>
+                            </dd>
+                        }
                     </dl>
                 </div>
             </div>

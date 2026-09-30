@@ -164,21 +164,33 @@
                         }
                         else if (cur.Status == "Active")
                         {
-                            <div class="p-3 bg-light rounded small text-muted">
-                                <strong>Status:</strong> Your membership is active. Enjoy full facility access and customized workout coaching!
+                            <div class="p-3 bg-light rounded d-flex justify-content-between align-items-center mb-0">
+                                <div class="small text-muted">
+                                    <strong>Status:</strong> Your membership is active. Enjoy full facility access and coaching!
+                                </div>
+                                <a asp-action="Renew" asp-route-id="@cur.MembershipId" class="btn btn-outline-primary btn-sm ms-3 text-nowrap fw-semibold">
+                                    Renew Membership &rarr;
+                                </a>
                             </div>
                         }
                         else if (cur.Status == "Upcoming")
                         {
-                            <div class="p-3 bg-light rounded small text-muted">
-                                <strong>Status:</strong> Your membership is scheduled to activate on <strong>@cur.StartDate.ToString("yyyy-MM-dd")</strong>.
+                            <div class="p-3 bg-light rounded d-flex justify-content-between align-items-center mb-0">
+                                <div class="small text-muted">
+                                    <strong>Status:</strong> Your membership is scheduled to activate on <strong>@cur.StartDate.ToString("yyyy-MM-dd")</strong>.
+                                </div>
+                                <a asp-action="Renew" asp-route-id="@cur.MembershipId" class="btn btn-outline-primary btn-sm ms-3 text-nowrap fw-semibold">
+                                    Renew / Extend &rarr;
+                                </a>
                             </div>
                         }
                         else
                         {
                             <div class="alert alert-secondary d-flex justify-content-between align-items-center mb-0">
                                 <div>Your membership has expired.</div>
-                                <a asp-action="Plans" class="btn btn-primary btn-sm">Renew / Choose Plan</a>
+                                <a asp-action="Renew" asp-route-id="@cur.MembershipId" class="btn btn-primary btn-sm fw-semibold">
+                                    Renew Membership &rarr;
+                                </a>
                             </div>
                         }
                     </div>

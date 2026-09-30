@@ -33,6 +33,11 @@ public class MembershipCheckoutViewModel
     // Prior Payment Attempts (for retry history display)
     public List<Payment> PreviousPayments { get; set; } = new();
 
+    // Coach Assignment (Preserved during renewal)
+    public int? AssignedTrainerId { get; set; }
+    public string? AssignedTrainerName { get; set; }
+    public bool HasAssignedTrainer => AssignedTrainerId.HasValue && !string.IsNullOrEmpty(AssignedTrainerName);
+
     // Simulation parameter for demo payment
     public bool SimulateSuccess { get; set; } = true;
 }

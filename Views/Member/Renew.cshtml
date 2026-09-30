@@ -1,0 +1,246 @@
+@model GymManagementSystem.Models.ViewModels.MembershipRenewalViewModel
+
+@{
+    ViewData["Title"] = "Renew Membership";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Memberships">My Memberships</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Renew Subscription</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Header Section -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2 mb-1 fw-bold text-dark">Renew Gym Membership</h1>
+                    <p class="text-muted mb-0">Extend your subscription or choose a new plan while preserving your training history and coach assignment.</p>
+                </div>
+                <div>
+                    <a asp-action="Memberships" class="btn btn-outline-secondary">
+                        &larr; Back to Memberships
+                    </a>
+                </div>
+            </div>
+
+            <!-- Feedback Alerts -->
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span class="fw-semibold">Error:</span> @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["InfoMessage"] != null)
+            {
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    @TempData["InfoMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- 1. ORIGINAL MEMBERSHIP PROFILE CARD -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-bold">1. Current / Previous Subscription Details</h5>
+                    <span class="badge bg-light text-primary px-3 py-1">Order #@Model.OriginalMembershipId</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4 border-end">
+                            <div class="text-muted small text-uppercase fw-semibold mb-1">Current Package</div>
+                            <div class="fw-bold fs-5 text-dark">@Model.OriginalPlanName</div>
+                            <div class="mt-2">
+                                @if (Model.OriginalCanonicalStatus == "Active")
+                                {
+                                    <span class="badge bg-success px-2 py-1">Active</span>
+                                }
+                                else if (Model.OriginalCanonicalStatus == "Upcoming")
+                                {
+                                    <span class="badge bg-info text-dark px-2 py-1">Upcoming</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-2 py-1">Expired</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 border-end">
+                            <div class="text-muted small text-uppercase fw-semibold mb-1">Validity Period</div>
+                            <div class="small">
+                                <span class="text-muted">From:</span> <strong>@Model.OriginalStartDate.ToString("MMM dd, yyyy")</strong>
+                            </div>
+                            <div class="small">
+                                <span class="text-muted">To:</span> <strong class="text-primary">@Model.OriginalEndDate.ToString("MMM dd, yyyy")</strong>
+                            </div>
+                            <div class="text-muted small mt-2">
+                                @if (Model.OriginalCanonicalStatus == "Active" || Model.OriginalCanonicalStatus == "Upcoming")
+                                {
+                                    <span class="text-success">&#10003; Renewal starts seamlessly the day after expiry!</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">&#9888; Expired plan: Renewal activates immediately today.</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="text-muted small text-uppercase fw-semibold mb-1">Assigned Coach</div>
+                            @if (Model.HasAssignedTrainer)
+                            {
+                                <div class="fw-bold text-success fs-6">
+                                    &#127947; @Model.PreservedTrainerName
+                                </div>
+                                <div class="text-muted small">@Model.PreservedTrainerEmail</div>
+                                <div class="mt-1">
+                                    <span class="badge bg-success-subtle text-success border border-success">
+                                        Retained for Renewal
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-muted small">
+                                    <span class="badge bg-warning text-dark">No coach assigned</span>
+                                </div>
+                                <div class="text-muted small mt-1">
+                                    Admin will match a trainer after renewal is activated.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. RENEWAL FORM -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="card-title mb-0 fw-bold">2. Configure Your Renewal Subscription</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Renew" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="OriginalMembershipId" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4" role="alert"></div>
+
+                        <!-- Membership Plan Selection -->
+                        <div class="mb-4">
+                            <label asp-for="SelectedPlanId" class="form-label fw-bold">Select Membership Plan</label>
+                            <select asp-for="SelectedPlanId" asp-items="Model.AvailablePlans" class="form-select form-select-lg"></select>
+                            <span asp-validation-for="SelectedPlanId" class="text-danger small"></span>
+                            <div class="form-text small">
+                                You can renew with the same plan or upgrade to a longer duration package.
+                            </div>
+                        </div>
+
+                        <!-- Estimated Dates Banner -->
+                        <div class="p-3 bg-light rounded mb-4 border">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="fw-bold text-dark">Renewal Validity Schedule:</span>
+                                @if (Model.OriginalCanonicalStatus == "Active" || Model.OriginalCanonicalStatus == "Upcoming")
+                                {
+                                    <span class="badge bg-info text-dark">Zero-Gap Continuity</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary">Immediate Start</span>
+                                }
+                            </div>
+                            <div class="small text-muted">
+                                @if (Model.OriginalCanonicalStatus == "Active" || Model.OriginalCanonicalStatus == "Upcoming")
+                                {
+                                    <span>
+                                        Your renewal will begin on <strong>@Model.CalculatedStartDate.ToString("MMMM dd, yyyy")</strong>
+                                        (the day after your current plan expires), guaranteeing continuous access with zero overlap.
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>
+                                        Your renewal will activate on <strong>@Model.CalculatedStartDate.ToString("MMMM dd, yyyy")</strong>
+                                        upon verified payment.
+                                    </span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Training Preferences Section -->
+                        <h6 class="fw-bold text-dark mb-3 pt-2 border-top">Training Profile &amp; Preferences</h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="TrainingGoalSpecializationId" class="form-label fw-semibold">Primary Training Goal</label>
+                                <select asp-for="TrainingGoalSpecializationId" asp-items="Model.AvailableGoals" class="form-select"></select>
+                                <span asp-validation-for="TrainingGoalSpecializationId" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="ExperienceLevel" class="form-label fw-semibold">Experience Level</label>
+                                <select asp-for="ExperienceLevel" asp-items="Model.AvailableExperienceLevels" class="form-select"></select>
+                                <span asp-validation-for="ExperienceLevel" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="TrainingPreference" class="form-label fw-semibold">Special Training Preferences / Notes</label>
+                            <textarea asp-for="TrainingPreference" class="form-control" rows="2" placeholder="e.g. Focus on strength progression, prefer morning routines..."></textarea>
+                            <span asp-validation-for="TrainingPreference" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Coach Preservation Callout -->
+                        @if (Model.HasAssignedTrainer)
+                        {
+                            <div class="alert alert-success d-flex align-items-center mb-4 p-3" role="alert">
+                                <div class="fs-3 me-3">&#10003;</div>
+                                <div>
+                                    <h6 class="alert-heading fw-bold mb-1">Coach Retained Automatically</h6>
+                                    <div class="small">
+                                        Your assigned coach <strong>@Model.PreservedTrainerName</strong> will remain your designated trainer for this renewal package. No administrative reassignment is necessary.
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-light border d-flex align-items-center mb-4 p-3 text-muted" role="alert">
+                                <div class="fs-3 me-3">&#9888;</div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-1">Coach Assignment</h6>
+                                    <div class="small">
+                                        Since no coach was previously assigned to this subscription, our administration will match you with a certified trainer after payment verification.
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <hr class="my-4" />
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a asp-action="Memberships" class="btn btn-outline-secondary">
+                                Cancel &amp; Return
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4 fw-bold shadow-sm">
+                                Proceed to Checkout &rarr;
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -295,6 +295,231 @@ public class MemberController : Controller
     }
 
     // =========================================================================
+    // MEMBERSHIP RENEWAL WORKFLOW (PHASE 7)
+    // =========================================================================
+
+    // GET: Member/Renew/5
+    [HttpGet]
+    public async Task<IActionResult> Renew(int id)
+    {
+        var member = await GetCurrentMemberAsync();
+        if (member == null)
+        {
+            return Challenge();
+        }
+
+        var membership = await _context.Memberships
+            .AsNoTracking()
+            .Include(m => m.MembershipPlan)
+            .Include(m => m.TrainingGoalSpecialization)
+            .Include(m => m.AssignedTrainer)
+            .Include(m => m.Payments)
+            .FirstOrDefaultAsync(m => m.MembershipId == id);
+
+        // Security / Isolation: Membership must belong to current member
+        if (membership == null || membership.MemberId != member.MemberId)
+        {
+            return NotFound("Membership record was not found or access is denied.");
+        }
+
+        var today = DateTime.Today;
+        var canonicalStatus = MembershipStatusResolver.ResolveStatus(membership, today);
+
+        // Rule: Do NOT allow renewal of PendingPayment membership
+        if (canonicalStatus == GymConstants.MembershipStatuses.PendingPayment)
+        {
+            TempData["InfoMessage"] = "This membership is pending payment. Complete your existing payment instead of renewing.";
+            return RedirectToAction(nameof(Checkout), new { id = membership.MembershipId });
+        }
+
+        // Rule: If member already has an uncompleted pending checkout, redirect to complete it
+        var existingPending = member.Memberships.FirstOrDefault(m =>
+            MembershipStatusResolver.ResolveStatus(m, today) == GymConstants.MembershipStatuses.PendingPayment);
+        if (existingPending != null)
+        {
+            TempData["InfoMessage"] = "You have an uncompleted pending checkout. Please complete or review your payment before starting another renewal.";
+            return RedirectToAction(nameof(Checkout), new { id = existingPending.MembershipId });
+        }
+
+        // Calculate Start Date (Part G):
+        // If Active or Upcoming: New StartDate = OldMembership.EndDate.AddDays(1)
+        // If Expired: New StartDate = today
+        var startDate = (canonicalStatus == GymConstants.MembershipStatuses.Active || canonicalStatus == GymConstants.MembershipStatuses.Upcoming)
+            ? membership.EndDate.Date.AddDays(1)
+            : today;
+
+        var plan = membership.MembershipPlan;
+        var duration = plan?.DurationInMonths ?? 1;
+        var endDate = startDate.AddMonths(duration);
+
+        // Verify preserved trainer (Part J):
+        int? preservedTrainerId = null;
+        string? preservedTrainerName = null;
+        string? preservedTrainerEmail = null;
+        if (membership.AssignedTrainerId.HasValue)
+        {
+            var trainer = await _context.Trainers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.TrainerId == membership.AssignedTrainerId.Value);
+
+            if (trainer != null)
+            {
+                preservedTrainerId = trainer.TrainerId;
+                preservedTrainerName = trainer.FullName;
+                preservedTrainerEmail = trainer.Email;
+            }
+        }
+
+        var model = new MembershipRenewalViewModel
+        {
+            OriginalMembershipId = membership.MembershipId,
+            MemberName = member.FullName,
+            MemberEmail = member.Email,
+            OriginalPlanName = plan?.Name ?? "Membership Plan",
+            OriginalStartDate = membership.StartDate,
+            OriginalEndDate = membership.EndDate,
+            OriginalCanonicalStatus = canonicalStatus,
+            PreservedTrainerId = preservedTrainerId,
+            PreservedTrainerName = preservedTrainerName,
+            PreservedTrainerEmail = preservedTrainerEmail,
+            SelectedPlanId = membership.MembershipPlanId,
+            TrainingGoalSpecializationId = membership.TrainingGoalSpecializationId ?? 1,
+            ExperienceLevel = membership.ExperienceLevel ?? GymConstants.ExperienceLevels.Beginner,
+            TrainingPreference = membership.TrainingPreference,
+            CalculatedStartDate = startDate,
+            CalculatedEndDate = endDate,
+            PlanPrice = plan?.Price ?? 0,
+            PlanDurationInMonths = duration
+        };
+
+        await PopulateRenewalDropdownsAsync(model);
+        return View(model);
+    }
+
+    // POST: Member/Renew
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Renew(MembershipRenewalViewModel model)
+    {
+        var member = await GetCurrentMemberAsync();
+        if (member == null)
+        {
+            return Challenge();
+        }
+
+        // 1. Reload original membership from database with related entities
+        var originalMembership = await _context.Memberships
+            .Include(m => m.MembershipPlan)
+            .Include(m => m.AssignedTrainer)
+            .Include(m => m.Payments)
+            .FirstOrDefaultAsync(m => m.MembershipId == model.OriginalMembershipId);
+
+        if (originalMembership == null || originalMembership.MemberId != member.MemberId)
+        {
+            return NotFound("Original membership record was not found or access is denied.");
+        }
+
+        var today = DateTime.Today;
+        var canonicalStatus = MembershipStatusResolver.ResolveStatus(originalMembership, today);
+
+        // Rule: PendingPayment membership cannot be renewed
+        if (canonicalStatus == GymConstants.MembershipStatuses.PendingPayment)
+        {
+            TempData["InfoMessage"] = "This membership is pending payment. Complete your existing payment instead of renewing.";
+            return RedirectToAction(nameof(Checkout), new { id = originalMembership.MembershipId });
+        }
+
+        // 2. Authoritative plan lookup from database
+        var selectedPlan = await _context.MembershipPlans
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.MembershipPlanId == model.SelectedPlanId);
+
+        if (selectedPlan == null)
+        {
+            ModelState.AddModelError(nameof(model.SelectedPlanId), "The selected membership plan does not exist.");
+        }
+
+        // 3. Training goal specialization verification
+        var goalExists = await _context.Specializations
+            .AsNoTracking()
+            .AnyAsync(s => s.SpecializationId == model.TrainingGoalSpecializationId);
+
+        if (!goalExists)
+        {
+            ModelState.AddModelError(nameof(model.TrainingGoalSpecializationId), "Please select a valid training goal specialization.");
+        }
+
+        // 4. Experience level verification
+        if (!GymConstants.ExperienceLevels.All.Contains(model.ExperienceLevel))
+        {
+            ModelState.AddModelError(nameof(model.ExperienceLevel), "Please select a valid fitness experience level.");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            model.OriginalPlanName = originalMembership.MembershipPlan?.Name ?? "Membership Plan";
+            model.OriginalStartDate = originalMembership.StartDate;
+            model.OriginalEndDate = originalMembership.EndDate;
+            model.OriginalCanonicalStatus = canonicalStatus;
+            model.PreservedTrainerId = originalMembership.AssignedTrainerId;
+            model.PreservedTrainerName = originalMembership.AssignedTrainer?.FullName;
+
+            if (selectedPlan != null)
+            {
+                var calcStart = (canonicalStatus == GymConstants.MembershipStatuses.Active || canonicalStatus == GymConstants.MembershipStatuses.Upcoming)
+                    ? originalMembership.EndDate.Date.AddDays(1)
+                    : today;
+                model.CalculatedStartDate = calcStart;
+                model.CalculatedEndDate = calcStart.AddMonths(selectedPlan.DurationInMonths).Date;
+                model.PlanPrice = selectedPlan.Price;
+                model.PlanDurationInMonths = selectedPlan.DurationInMonths;
+            }
+
+            await PopulateRenewalDropdownsAsync(model);
+            return View(model);
+        }
+
+        // 5. Calculate Server-Side Dates (Part G & H)
+        var newStartDate = (canonicalStatus == GymConstants.MembershipStatuses.Active || canonicalStatus == GymConstants.MembershipStatuses.Upcoming)
+            ? originalMembership.EndDate.Date.AddDays(1)
+            : today;
+        var newEndDate = newStartDate.AddMonths(selectedPlan!.DurationInMonths).Date;
+
+        // 6. Verify and preserve trainer (Part I & J)
+        int? preservedTrainerId = null;
+        if (originalMembership.AssignedTrainerId.HasValue)
+        {
+            var trainerExists = await _context.Trainers
+                .AnyAsync(t => t.TrainerId == originalMembership.AssignedTrainerId.Value);
+
+            if (trainerExists)
+            {
+                preservedTrainerId = originalMembership.AssignedTrainerId.Value;
+            }
+        }
+
+        // 7. Create NEW Membership record (Part K: Status = PendingPayment)
+        var newMembership = new Membership
+        {
+            MemberId = member.MemberId,
+            MembershipPlanId = selectedPlan.MembershipPlanId,
+            StartDate = newStartDate,
+            EndDate = newEndDate,
+            Status = GymConstants.MembershipStatuses.PendingPayment,
+            TrainingGoalSpecializationId = model.TrainingGoalSpecializationId,
+            ExperienceLevel = model.ExperienceLevel,
+            TrainingPreference = model.TrainingPreference?.Trim(),
+            AssignedTrainerId = preservedTrainerId
+        };
+
+        _context.Memberships.Add(newMembership);
+        await _context.SaveChangesAsync();
+
+        TempData["SuccessMessage"] = "Renewal subscription created. Please review and complete your payment.";
+        return RedirectToAction(nameof(Checkout), new { id = newMembership.MembershipId });
+    }
+
+    // =========================================================================
     // CHECKOUT REVIEW SCREEN
     // =========================================================================
 
@@ -312,6 +537,7 @@ public class MemberController : Controller
             .AsNoTracking()
             .Include(m => m.MembershipPlan)
             .Include(m => m.TrainingGoalSpecialization)
+            .Include(m => m.AssignedTrainer)
             .Include(m => m.Payments)
             .FirstOrDefaultAsync(m => m.MembershipId == id);
 
@@ -340,6 +566,8 @@ public class MemberController : Controller
             StartDate = membership.StartDate,
             EndDate = membership.EndDate,
             CanonicalStatus = canonicalStatus,
+            AssignedTrainerId = membership.AssignedTrainerId,
+            AssignedTrainerName = membership.AssignedTrainer?.FullName,
             PreviousPayments = membership.Payments.OrderByDescending(p => p.PaymentDate).ToList()
         };
 
@@ -364,6 +592,7 @@ public class MemberController : Controller
             .AsNoTracking()
             .Include(m => m.MembershipPlan)
             .Include(m => m.TrainingGoalSpecialization)
+            .Include(m => m.AssignedTrainer)
             .Include(m => m.Payments)
             .FirstOrDefaultAsync(m => m.MembershipId == id);
 
@@ -397,6 +626,8 @@ public class MemberController : Controller
             StartDate = membership.StartDate,
             EndDate = membership.EndDate,
             CanonicalStatus = MembershipStatusResolver.ResolveStatus(membership),
+            AssignedTrainerId = membership.AssignedTrainerId,
+            AssignedTrainerName = membership.AssignedTrainer?.FullName,
             PreviousPayments = membership.Payments.OrderByDescending(p => p.PaymentDate).ToList(),
             SimulateSuccess = true
         };
@@ -632,6 +863,38 @@ public class MemberController : Controller
 
     private async Task PopulatePurchaseDropdownsAsync(MembershipPurchaseViewModel model)
     {
+        var goals = await _context.Specializations
+            .AsNoTracking()
+            .OrderBy(s => s.SpecializationId)
+            .ToListAsync();
+
+        model.AvailableGoals = goals.Select(g => new SelectListItem
+        {
+            Value = g.SpecializationId.ToString(),
+            Text = $"{g.Name} — {g.Description}"
+        });
+
+        model.AvailableExperienceLevels = GymConstants.ExperienceLevels.All.Select(lvl => new SelectListItem
+        {
+            Value = lvl,
+            Text = lvl
+        });
+    }
+
+    private async Task PopulateRenewalDropdownsAsync(MembershipRenewalViewModel model)
+    {
+        var plans = await _context.MembershipPlans
+            .AsNoTracking()
+            .Where(p => p.DurationInMonths > 0 && p.Price >= 0)
+            .OrderBy(p => p.DurationInMonths)
+            .ToListAsync();
+
+        model.AvailablePlans = plans.Select(p => new SelectListItem
+        {
+            Value = p.MembershipPlanId.ToString(),
+            Text = $"{p.Name} — ₹{p.Price:0.00} ({p.DurationInMonths} {(p.DurationInMonths == 1 ? "month" : "months")})"
+        });
+
         var goals = await _context.Specializations
             .AsNoTracking()
             .OrderBy(s => s.SpecializationId)

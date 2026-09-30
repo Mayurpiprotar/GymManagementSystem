@@ -132,12 +132,20 @@
                                     Complete Payment (Checkout) &rarr;
                                 </a>
                             }
-                            else if (ms.Payments != null && ms.Payments.Any(p => p.Status == "Paid"))
+                            else
                             {
-                                var paid = ms.Payments.First(p => p.Status == "Paid");
-                                <a asp-action="PaymentSuccess" asp-route-id="@paid.PaymentId" class="btn btn-outline-secondary btn-sm w-100">
-                                    View Payment Receipt
-                                </a>
+                                <div class="d-flex gap-2 w-100">
+                                    <a asp-action="Renew" asp-route-id="@ms.MembershipId" class="btn btn-outline-primary btn-sm flex-grow-1 fw-semibold">
+                                        Renew Membership &rarr;
+                                    </a>
+                                    @if (ms.Payments != null && ms.Payments.Any(p => p.Status == "Paid"))
+                                    {
+                                        var paid = ms.Payments.First(p => p.Status == "Paid");
+                                        <a asp-action="PaymentSuccess" asp-route-id="@paid.PaymentId" class="btn btn-outline-secondary btn-sm">
+                                            Receipt
+                                        </a>
+                                    }
+                                </div>
                             }
                         </div>
                     </div>
