@@ -33,9 +33,10 @@
                         <div class="mb-3">
                             <label asp-for="MemberId" class="form-label fw-semibold">Select Member *</label>
                             <select asp-for="MemberId" asp-items="Model.MemberList" class="form-select">
-                                <option value="">-- Choose Member --</option>
+                                <option value="">-- Choose Assigned Member --</option>
                             </select>
                             <span asp-validation-for="MemberId" class="text-danger small"></span>
+                            <div class="form-text small">Only active paid members currently assigned to you are listed.</div>
                         </div>
 
                         <div class="mb-3">

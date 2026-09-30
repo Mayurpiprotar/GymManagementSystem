@@ -1,6 +1,7 @@
 using GymManagementSystem.Data;
 using GymManagementSystem.Models;
 using GymManagementSystem.Models.ViewModels;
+using GymManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +58,7 @@ public class TrainerWorkoutPlanController : Controller
             return NotFound();
         }
 
+        // Must belong to authenticated trainer
         var plan = await _context.WorkoutPlans
             .AsNoTracking()
             .Include(wp => wp.Member)
@@ -72,7 +74,7 @@ public class TrainerWorkoutPlanController : Controller
     }
 
     // GET: TrainerWorkoutPlan/Create
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(int? memberId)
     {
         var trainer = await GetCurrentTrainerAsync();
         if (trainer == null)
@@ -83,10 +85,11 @@ public class TrainerWorkoutPlanController : Controller
         var model = new WorkoutPlanViewModel
         {
             CreatedDate = DateTime.Today,
-            TrainerName = trainer.FullName
+            TrainerName = trainer.FullName,
+            MemberId = memberId ?? 0
         };
 
-        await PopulateMemberListAsync(model);
+        await PopulateAssignedActiveMembersListAsync(model, trainer.TrainerId);
         return View(model);
     }
 
@@ -104,10 +107,13 @@ public class TrainerWorkoutPlanController : Controller
         ModelState.Remove(nameof(model.MemberList));
         ModelState.Remove(nameof(model.TrainerName));
 
-        var memberExists = await _context.Members.AnyAsync(m => m.MemberId == model.MemberId);
-        if (!memberExists)
+        // Enforce: Member must have an Active, Paid membership assigned to this trainer
+        var today = DateTime.Today;
+        var eligible = await IsMemberEligibleForTrainerAsync(model.MemberId, trainer.TrainerId, today);
+        if (!eligible)
         {
-            ModelState.AddModelError(nameof(model.MemberId), "The selected member does not exist.");
+            ModelState.AddModelError(nameof(model.MemberId),
+                "You can only prescribe workout plans for active, paid members currently assigned to you.");
         }
 
         if (ModelState.IsValid)
@@ -115,10 +121,10 @@ public class TrainerWorkoutPlanController : Controller
             var plan = new WorkoutPlan
             {
                 MemberId = model.MemberId,
-                TrainerId = trainer.TrainerId, // Enforce authenticated trainer ownership
+                TrainerId = trainer.TrainerId, // STRICTLY derived from server-side authenticated Trainer
                 PlanName = model.PlanName.Trim(),
                 Description = model.Description.Trim(),
-                CreatedDate = DateTime.Today // Controlled server-side
+                CreatedDate = DateTime.Today // Server-controlled
             };
 
             _context.WorkoutPlans.Add(plan);
@@ -129,7 +135,7 @@ public class TrainerWorkoutPlanController : Controller
         }
 
         model.TrainerName = trainer.FullName;
-        await PopulateMemberListAsync(model);
+        await PopulateAssignedActiveMembersListAsync(model, trainer.TrainerId);
         return View(model);
     }
 
@@ -147,12 +153,23 @@ public class TrainerWorkoutPlanController : Controller
             return NotFound();
         }
 
+        // Verify plan belongs to current trainer
         var plan = await _context.WorkoutPlans
+            .Include(wp => wp.Member)
             .FirstOrDefaultAsync(wp => wp.WorkoutPlanId == id && wp.TrainerId == trainer.TrainerId);
 
         if (plan == null)
         {
             return NotFound();
+        }
+
+        // Verify that the assigned member/membership is still active & paid
+        var today = DateTime.Today;
+        var eligible = await IsMemberEligibleForTrainerAsync(plan.MemberId, trainer.TrainerId, today);
+        if (!eligible)
+        {
+            TempData["ErrorMessage"] = "Cannot edit this workout plan because the member's assigned membership is no longer active and paid.";
+            return RedirectToAction(nameof(Index));
         }
 
         var model = new WorkoutPlanViewModel
@@ -165,7 +182,7 @@ public class TrainerWorkoutPlanController : Controller
             TrainerName = trainer.FullName
         };
 
-        await PopulateMemberListAsync(model);
+        await PopulateAssignedActiveMembersListAsync(model, trainer.TrainerId);
         return View(model);
     }
 
@@ -196,10 +213,13 @@ public class TrainerWorkoutPlanController : Controller
             return NotFound();
         }
 
-        var memberExists = await _context.Members.AnyAsync(m => m.MemberId == model.MemberId);
-        if (!memberExists)
+        // Verify that the target member is assigned to this trainer and is Active & Paid
+        var today = DateTime.Today;
+        var eligible = await IsMemberEligibleForTrainerAsync(model.MemberId, trainer.TrainerId, today);
+        if (!eligible)
         {
-            ModelState.AddModelError(nameof(model.MemberId), "The selected member does not exist.");
+            ModelState.AddModelError(nameof(model.MemberId),
+                "You can only assign workout plans to active, paid members currently assigned to you.");
         }
 
         if (ModelState.IsValid)
@@ -217,7 +237,7 @@ public class TrainerWorkoutPlanController : Controller
 
         model.TrainerName = trainer.FullName;
         model.CreatedDate = plan.CreatedDate;
-        await PopulateMemberListAsync(model);
+        await PopulateAssignedActiveMembersListAsync(model, trainer.TrainerId);
         return View(model);
     }
 
@@ -275,6 +295,10 @@ public class TrainerWorkoutPlanController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    // =========================================================================
+    // AUTHORIZATION & DATA HELPERS
+    // =========================================================================
+
     private async Task<Trainer?> GetCurrentTrainerAsync()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -286,14 +310,39 @@ public class TrainerWorkoutPlanController : Controller
         return await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == user.Id);
     }
 
-    private async Task PopulateMemberListAsync(WorkoutPlanViewModel model)
+    private async Task<bool> IsMemberEligibleForTrainerAsync(int memberId, int trainerId, DateTime today)
     {
-        var members = await _context.Members
+        var memberships = await _context.Memberships
             .AsNoTracking()
-            .OrderBy(m => m.FullName)
+            .Include(m => m.Payments)
+            .Where(m => m.MemberId == memberId && m.AssignedTrainerId == trainerId)
             .ToListAsync();
 
-        model.MemberList = members.Select(m => new SelectListItem
+        return memberships.Any(m =>
+            MembershipStatusResolver.ResolveStatus(m, today) == GymConstants.MembershipStatuses.Active
+            && m.Payments != null && m.Payments.Any(p => p.Status == GymConstants.PaymentStatuses.Paid));
+    }
+
+    private async Task PopulateAssignedActiveMembersListAsync(WorkoutPlanViewModel model, int trainerId)
+    {
+        var today = DateTime.Today;
+        var memberships = await _context.Memberships
+            .AsNoTracking()
+            .Include(m => m.Member)
+            .Include(m => m.Payments)
+            .Where(m => m.AssignedTrainerId == trainerId && m.Member != null)
+            .ToListAsync();
+
+        var activeAssignedMembers = memberships
+            .Where(m => MembershipStatusResolver.ResolveStatus(m, today) == GymConstants.MembershipStatuses.Active
+                     && m.Payments != null && m.Payments.Any(p => p.Status == GymConstants.PaymentStatuses.Paid))
+            .Select(m => m.Member!)
+            .GroupBy(m => m.MemberId)
+            .Select(g => g.First())
+            .OrderBy(m => m.FullName)
+            .ToList();
+
+        model.MemberList = activeAssignedMembers.Select(m => new SelectListItem
         {
             Value = m.MemberId.ToString(),
             Text = $"{m.FullName} ({m.Email})"

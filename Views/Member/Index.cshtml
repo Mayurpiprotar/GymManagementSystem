@@ -332,12 +332,19 @@
                         <div class="list-group list-group-flush">
                             @foreach (var wp in Model.WorkoutPlans)
                             {
-                                <div class="list-group-item px-0 py-2">
-                                    <div class="fw-semibold text-dark">@wp.PlanName</div>
-                                    <div class="text-muted small">
-                                        Coach: @(wp.Trainer?.FullName ?? "Staff Coach") &bull; @wp.CreatedDate.ToString("yyyy-MM-dd")
+                                <div class="list-group-item px-0 py-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-semibold text-dark">@wp.PlanName</div>
+                                            <div class="text-muted small">
+                                                Coach: @(wp.Trainer?.FullName ?? "Staff Coach") &bull; @wp.CreatedDate.ToString("yyyy-MM-dd")
+                                            </div>
+                                        </div>
+                                        <a asp-action="WorkoutPlanDetails" asp-route-id="@wp.WorkoutPlanId" class="btn btn-outline-primary btn-sm ms-2 text-nowrap">
+                                            View Details &rarr;
+                                        </a>
                                     </div>
-                                    <p class="small text-muted mb-0 mt-1">@wp.Description</p>
+                                    <p class="small text-muted mb-0 mt-2 text-truncate" style="max-width: 340px;">@wp.Description</p>
                                 </div>
                             }
                         </div>

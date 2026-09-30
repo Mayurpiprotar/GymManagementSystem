@@ -1,0 +1,171 @@
+@model GymManagementSystem.Models.ViewModels.TrainerMemberDetailsViewModel
+
+@{
+    ViewData["Title"] = $"Member Profile — {Model.MemberName}";
+}
+
+<div class="container mt-4">
+    <!-- Breadcrumb / Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index">Trainer Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Assigned Client</li>
+                </ol>
+            </nav>
+            <h1 class="h2 mb-0 fw-bold">@Model.MemberName</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="TrainerWorkoutPlan" asp-action="Create" asp-route-memberId="@Model.MemberId" class="btn btn-primary fw-semibold">
+                + Create Workout Plan
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                &larr; Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <!-- Client Profile Card -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0 fw-semibold">Client Overview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center fw-bold fs-3" style="width: 72px; height: 72px;">
+                            @(Model.MemberName.Length > 0 ? Model.MemberName.Substring(0, 1).ToUpper() : "M")
+                        </div>
+                        <h5 class="fw-bold mt-2 mb-0">@Model.MemberName</h5>
+                        <span class="badge bg-success-subtle text-success border border-success mt-1">Active Client</span>
+                    </div>
+
+                    <dl class="row mb-0 small">
+                        <dt class="col-sm-4 text-muted">Email</dt>
+                        <dd class="col-sm-8 text-dark text-truncate">@Model.Email</dd>
+
+                        <dt class="col-sm-4 text-muted">Phone</dt>
+                        <dd class="col-sm-8 text-dark">@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</dd>
+
+                        <dt class="col-sm-4 text-muted">Gender</dt>
+                        <dd class="col-sm-8 text-dark">@Model.Gender</dd>
+
+                        <dt class="col-sm-4 text-muted">Member Since</dt>
+                        <dd class="col-sm-8 text-dark">@Model.JoinDate.ToString("yyyy-MM-dd")</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Focus & Membership Card -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-light py-3">
+                    <h5 class="card-title mb-0 fw-semibold">Training Focus &amp; Current Subscription</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block">Training Goal Specialization</span>
+                                <span class="fw-bold text-primary fs-6">@Model.GoalName</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded border">
+                                <span class="text-muted small d-block">Experience Level</span>
+                                <span class="badge bg-info text-dark mt-1 fs-6">@Model.ExperienceLevel</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="fw-semibold text-muted small d-block mb-1">Workout &amp; Schedule Preference</label>
+                        <div class="p-3 bg-light rounded border text-dark">
+                            @Model.TrainingPreference
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row small">
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Active Membership Plan</span>
+                            <strong class="text-dark">@Model.PlanName</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Validity Period</span>
+                            <span class="text-dark">@Model.StartDate.ToString("yyyy-MM-dd") to @Model.EndDate.ToString("yyyy-MM-dd")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assigned Workout Plans List -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="card-title mb-0 fw-semibold">Assigned Workout Routines (@Model.WorkoutPlans.Count)</h5>
+                <span class="text-muted small">Personalized routines prescribed by you for @Model.MemberName</span>
+            </div>
+            <a asp-controller="TrainerWorkoutPlan" asp-action="Create" asp-route-memberId="@Model.MemberId" class="btn btn-sm btn-primary">
+                + New Routine
+            </a>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.WorkoutPlans.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Plan Name</th>
+                                <th>Routine Description</th>
+                                <th>Created Date</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var plan in Model.WorkoutPlans)
+                            {
+                                <tr>
+                                    <td class="fw-semibold text-primary">@plan.PlanName</td>
+                                    <td>
+                                        <div class="text-muted small text-truncate" style="max-width: 450px;" title="@plan.Description">
+                                            @(string.IsNullOrWhiteSpace(plan.Description) ? "No detailed routine specified." : plan.Description)
+                                        </div>
+                                    </td>
+                                    <td class="small text-nowrap">@plan.CreatedDate.ToString("yyyy-MM-dd")</td>
+                                    <td class="text-end">
+                                        <a asp-controller="TrainerWorkoutPlan" asp-action="Details" asp-route-id="@plan.WorkoutPlanId" class="btn btn-sm btn-outline-secondary">
+                                            Details
+                                        </a>
+                                        <a asp-controller="TrainerWorkoutPlan" asp-action="Edit" asp-route-id="@plan.WorkoutPlanId" class="btn btn-sm btn-outline-primary">
+                                            Edit
+                                        </a>
+                                        <a asp-controller="TrainerWorkoutPlan" asp-action="Delete" asp-route-id="@plan.WorkoutPlanId" class="btn btn-sm btn-outline-danger">
+                                            Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="p-4 text-center text-muted">
+                    <p class="mb-2">No workout routines created for @Model.MemberName yet.</p>
+                    <a asp-controller="TrainerWorkoutPlan" asp-action="Create" asp-route-memberId="@Model.MemberId" class="btn btn-sm btn-outline-primary">
+                        Prescribe Workout Plan Now
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -28,10 +28,23 @@
 
                         <div class="mb-3">
                             <label asp-for="MemberId" class="form-label fw-semibold">Select Member *</label>
-                            <select asp-for="MemberId" asp-items="Model.MemberList" class="form-select">
-                                <option value="">-- Choose Member --</option>
-                            </select>
+                            @if (Model.MemberList != null && Model.MemberList.Any())
+                            {
+                                <select asp-for="MemberId" asp-items="Model.MemberList" class="form-select">
+                                    <option value="">-- Choose Assigned Member --</option>
+                                </select>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning py-2 px-3 small mb-2">
+                                    You have no active paid members currently assigned to your coaching roster.
+                                </div>
+                                <select asp-for="MemberId" class="form-select" disabled>
+                                    <option value="">-- No Eligible Members --</option>
+                                </select>
+                            }
                             <span asp-validation-for="MemberId" class="text-danger small"></span>
+                            <div class="form-text small">Only members with active paid memberships assigned to you are eligible.</div>
                         </div>
 
                         <div class="mb-3">

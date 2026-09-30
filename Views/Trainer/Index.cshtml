@@ -178,8 +178,11 @@
                                             <span class="badge bg-secondary">@ms.Status</span>
                                         }
                                     </td>
-                                    <td class="text-end">
-                                        <a asp-controller="TrainerWorkoutPlan" asp-action="Create" class="btn btn-sm btn-outline-primary">
+                                    <td class="text-end text-nowrap">
+                                        <a asp-action="MemberDetails" asp-route-id="@ms.MemberId" class="btn btn-sm btn-outline-secondary me-1">
+                                            View Details
+                                        </a>
+                                        <a asp-controller="TrainerWorkoutPlan" asp-action="Create" asp-route-memberId="@ms.MemberId" class="btn btn-sm btn-outline-primary">
                                             + Workout Plan
                                         </a>
                                     </td>

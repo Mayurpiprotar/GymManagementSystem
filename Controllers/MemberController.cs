@@ -821,6 +821,36 @@ public class MemberController : Controller
     }
 
     // =========================================================================
+    // WORKOUT PLAN ISOLATION (MEMBER-ONLY)
+    // =========================================================================
+
+    // GET: Member/WorkoutPlanDetails/5
+    [HttpGet]
+    public async Task<IActionResult> WorkoutPlanDetails(int id)
+    {
+        var member = await GetCurrentMemberAsync();
+        if (member == null)
+        {
+            return Challenge();
+        }
+
+        // Section 4: Member sees ONLY their own workout plans (WorkoutPlan.MemberId == current logged-in Member.MemberId)
+        var plan = await _context.WorkoutPlans
+            .AsNoTracking()
+            .Include(wp => wp.Trainer)
+                .ThenInclude(t => t!.TrainerSpecializations)
+                    .ThenInclude(ts => ts.Specialization)
+            .FirstOrDefaultAsync(wp => wp.WorkoutPlanId == id && wp.MemberId == member.MemberId);
+
+        if (plan == null)
+        {
+            return NotFound();
+        }
+
+        return View(plan);
+    }
+
+    // =========================================================================
     // PRIVATE HELPERS
     // =========================================================================
 
