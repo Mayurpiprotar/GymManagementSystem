@@ -1,6 +1,7 @@
 using GymManagementSystem.Data;
 using GymManagementSystem.Models;
 using GymManagementSystem.Models.ViewModels;
+using GymManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -25,13 +26,14 @@ public class MembershipManagementController : Controller
             .AsNoTracking()
             .Include(m => m.Member)
             .Include(m => m.MembershipPlan)
+            .Include(m => m.Payments)
             .OrderByDescending(m => m.StartDate)
             .ToListAsync();
 
-        // Calculate real-time status according to date rules
+        // Calculate canonical status according to payment and date rules
         foreach (var m in memberships)
         {
-            m.Status = CalculateMembershipStatus(m.StartDate, m.EndDate);
+            m.Status = MembershipStatusResolver.ResolveStatus(m);
         }
 
         return View(memberships);
@@ -57,7 +59,7 @@ public class MembershipManagementController : Controller
             return NotFound();
         }
 
-        membership.Status = CalculateMembershipStatus(membership.StartDate, membership.EndDate);
+        membership.Status = MembershipStatusResolver.ResolveStatus(membership);
 
         return View(membership);
     }
@@ -240,7 +242,7 @@ public class MembershipManagementController : Controller
             return NotFound();
         }
 
-        membership.Status = CalculateMembershipStatus(membership.StartDate, membership.EndDate);
+        membership.Status = MembershipStatusResolver.ResolveStatus(membership);
 
         return View(membership);
     }
@@ -281,24 +283,11 @@ public class MembershipManagementController : Controller
     }
 
     /// <summary>
-    /// Calculates server-side membership status using Date-only comparison against DateTime.Today.
-    /// Rules:
-    /// - If StartDate > today: "Upcoming"
-    /// - If StartDate <= today AND EndDate >= today: "Active"
-    /// - If EndDate < today: "Expired"
+    /// Delegates to the centralized canonical MembershipStatusResolver.
     /// </summary>
     public static string CalculateMembershipStatus(DateTime startDate, DateTime endDate)
     {
-        var today = DateTime.Today;
-        if (startDate.Date > today)
-        {
-            return "Upcoming";
-        }
-        if (startDate.Date <= today && endDate.Date >= today)
-        {
-            return "Active";
-        }
-        return "Expired";
+        return MembershipStatusResolver.ResolveStatus(startDate, endDate, isPaid: true);
     }
 
     private async Task PopulateDropdownListsAsync(MembershipViewModel model)

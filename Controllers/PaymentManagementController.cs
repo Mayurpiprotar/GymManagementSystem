@@ -1,6 +1,7 @@
 using GymManagementSystem.Data;
 using GymManagementSystem.Models;
 using GymManagementSystem.Models.ViewModels;
+using GymManagementSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -287,6 +288,7 @@ public class PaymentManagementController : Controller
             .AsNoTracking()
             .Include(m => m.Member)
             .Include(m => m.MembershipPlan)
+            .Include(m => m.Payments)
             .OrderByDescending(m => m.StartDate)
             .ToListAsync();
 
@@ -309,7 +311,7 @@ public class PaymentManagementController : Controller
             MemberName = ms.Member?.FullName ?? string.Empty,
             PlanName = ms.MembershipPlan?.Name ?? string.Empty,
             PlanPrice = ms.MembershipPlan?.Price ?? 0,
-            Status = MembershipManagementController.CalculateMembershipStatus(ms.StartDate, ms.EndDate)
+            Status = MembershipStatusResolver.ResolveStatus(ms)
         }).ToList();
 
         model.PaymentMethodList = AllowedPaymentMethods.Select(m => new SelectListItem
