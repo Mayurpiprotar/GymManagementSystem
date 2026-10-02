@@ -3,112 +3,171 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - GymManagementSystem</title>
+    <title>@ViewData["Title"] - IronPulse Fitness Club</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/GymManagementSystem.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">GymManagementSystem</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+<body class="d-flex flex-column min-vh-100 bg-light-subtle">
+    <header class="sticky-top bg-white border-bottom shadow-sm">
+        <nav class="navbar navbar-expand-lg navbar-light py-2">
+            <div class="container-fluid px-lg-4">
+                <!-- Professional Logo Badge (Replaces plain text) -->
+                <a class="brand-logo-container py-1" asp-area="" asp-controller="Home" asp-action="Index">
+                    <div class="brand-emblem">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.82 10H3.5a.5.5 0 0 1-.48-.641l2.5-9z"/>
+                        </svg>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="brand-title">IRON<span class="brand-accent">PULSE</span></span>
+                        <span class="brand-tag">CLUB</span>
+                    </div>
+                </a>
+
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <div class="collapse navbar-collapse mt-2 mt-lg-0" id="mainNavbar">
+                    <!-- Navigation Boxes (Styled Pills) -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 nav-boxes ps-lg-3">
                         @if (User.Identity?.IsAuthenticated != true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-house-door"></i> Home
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Member" asp-action="Plans">Plans</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Member" asp-action="Plans">
+                                    <i class="bi bi-card-checklist"></i> Membership Plans
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="TrainerApplication" asp-action="Create">Apply as Trainer</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="TrainerApplication" asp-action="Create">
+                                    <i class="bi bi-person-badge"></i> Apply as Coach
+                                </a>
                             </li>
                         }
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Dashboard</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Admin" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="TrainerApplication" asp-action="Index">Trainer Applications</a>
+
+                            <!-- Operations Dropdown Box -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-box-pill dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-people-fill"></i> Members &amp; Plans
+                                </a>
+                                <ul class="dropdown-menu shadow border-0 mt-1">
+                                    <li><a class="dropdown-item py-2" asp-controller="MemberManagement" asp-action="Index"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Member Directory</a></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="MembershipPlanManagement" asp-action="Index"><i class="bi bi-tags-fill me-2 text-success"></i>Membership Plans</a></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="MembershipManagement" asp-action="Index"><i class="bi bi-award-fill me-2 text-warning"></i>Subscribed Memberships</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="PaymentManagement" asp-action="Index"><i class="bi bi-receipt me-2 text-info"></i>Financial &amp; Payments</a></li>
+                                </ul>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MemberManagement" asp-action="Index">Manage Members</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="TrainerManagement" asp-action="Index">Manage Trainers</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="TrainerAssignment" asp-action="Index">Trainer Matching</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MembershipPlanManagement" asp-action="Index">Manage Membership Plans</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MembershipManagement" asp-action="Index">Manage Memberships</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="PaymentManagement" asp-action="Index">Manage Payments</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="WorkoutPlanManagement" asp-action="Index">Manage Workout Plans</a>
+
+                            <!-- Coaching Dropdown Box -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-box-pill dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-trophy-fill"></i> Coaches &amp; Training
+                                </a>
+                                <ul class="dropdown-menu shadow border-0 mt-1">
+                                    <li><a class="dropdown-item py-2" asp-controller="TrainerManagement" asp-action="Index"><i class="bi bi-person-video3 me-2 text-primary"></i>Trainer Roster</a></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="TrainerApplication" asp-action="Index"><i class="bi bi-file-earmark-person me-2 text-warning"></i>Trainer Applications</a></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="TrainerAssignment" asp-action="Index"><i class="bi bi-shuffle me-2 text-info"></i>Trainer Matching Engine</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2" asp-controller="WorkoutPlanManagement" asp-action="Index"><i class="bi bi-activity me-2 text-danger"></i>Master Workout Plans</a></li>
+                                </ul>
                             </li>
                         }
                         @if (User.IsInRole("Trainer"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Trainer" asp-action="Index">Dashboard</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Trainer" asp-action="Index">
+                                    <i class="bi bi-speedometer2"></i> Coach Portal
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="TrainerWorkoutPlan" asp-action="Index">My Workout Plans</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="TrainerWorkoutPlan" asp-action="Index">
+                                    <i class="bi bi-calendar-check"></i> Client Workout Plans
+                                </a>
                             </li>
                         }
                         @if (User.IsInRole("Member"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Member" asp-action="Index">Dashboard</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Member" asp-action="Index">
+                                    <i class="bi bi-house-door-fill"></i> My Dashboard
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Member" asp-action="Plans">Plans</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Member" asp-action="Plans">
+                                    <i class="bi bi-card-checklist"></i> Browse Plans
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Member" asp-action="Memberships">My Memberships</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Member" asp-action="Memberships">
+                                    <i class="bi bi-award"></i> My Subscriptions
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Member" asp-action="Payments">My Payments</a>
+                                <a class="nav-box-pill" asp-area="" asp-controller="Member" asp-action="Payments">
+                                    <i class="bi bi-receipt-cutoff"></i> Receipts &amp; Billing
+                                </a>
                             </li>
                         }
                     </ul>
-                    <ul class="navbar-nav">
+
+                    <!-- User Account / Authentication Boxes -->
+                    <ul class="navbar-nav nav-boxes">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <li class="nav-item">
-                            <span class="nav-link text-dark">Hello, @User.Identity.Name!</span>
+                            <span class="nav-box-pill bg-light text-dark border">
+                                <i class="bi bi-person-circle text-primary"></i>
+                                <span class="fw-semibold">@User.Identity.Name</span>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">ADMIN</span>
+                                }
+                                else if (User.IsInRole("Trainer"))
+                                {
+                                    <span class="badge bg-info text-dark ms-1" style="font-size: 0.65rem;">COACH</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success ms-1" style="font-size: 0.65rem;">MEMBER</span>
+                                }
+                            </span>
                         </li>
                         <li class="nav-item">
                             <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                <button type="submit" class="nav-link btn btn-link text-dark border-0">Logout</button>
+                                <button type="submit" class="nav-box-pill border-danger text-danger bg-white" title="Sign out of account">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </button>
                             </form>
                         </li>
                     }
                     else
                     {
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+                            <a class="nav-box-pill" asp-controller="Account" asp-action="Login">
+                                <i class="bi bi-box-arrow-in-right"></i> Sign In
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+                            <a class="nav-box-pill nav-cta" asp-controller="Account" asp-action="Register">
+                                <i class="bi bi-lightning-charge-fill"></i> Join IronPulse
+                            </a>
                         </li>
                     }
                     </ul>
@@ -116,17 +175,108 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <div class="flex-grow-1">
+        <main role="main" class="pb-4">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <!-- Professional Business Grade Multi-Column Footer -->
+    <footer class="pro-footer">
         <div class="container">
-            &copy; 2026 - GymManagementSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="row g-4">
+                <!-- Col 1: Brand & Purpose -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="brand-logo-container mb-3">
+                        <div class="brand-emblem">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.82 10H3.5a.5.5 0 0 1-.48-.641l2.5-9z"/>
+                            </svg>
+                        </div>
+                        <span class="brand-title text-white">IRON<span class="brand-accent">PULSE</span></span>
+                    </div>
+                    <p class="text-light-50 small pe-lg-3" style="color: #94a3b8; line-height: 1.6;">
+                        IronPulse Fitness Club is a premier athletic conditioning and wellness destination. Engineered with certified trainers, ISO-grade equipment, and personalized progression tracking.
+                    </p>
+                    <div class="d-flex gap-3 mt-3">
+                        <span class="badge bg-secondary-subtle text-light border border-secondary px-2 py-1 small">
+                            <i class="bi bi-shield-check text-warning me-1"></i> ISO 9001 Certified
+                        </span>
+                        <span class="badge bg-secondary-subtle text-light border border-secondary px-2 py-1 small">
+                            <i class="bi bi-patch-check text-success me-1"></i> CPR/AED Ready
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6>Explore Club</h6>
+                    <ul>
+                        <li><a asp-controller="Home" asp-action="Index">Club Overview</a></li>
+                        <li><a asp-controller="Member" asp-action="Plans">Membership Plans</a></li>
+                        <li><a asp-controller="TrainerApplication" asp-action="Create">Coach Careers</a></li>
+                        <li><a asp-controller="Account" asp-action="Register">Referral Program</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Operating Schedule -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6>Gym Timings</h6>
+                    <div class="small" style="color: #94a3b8;">
+                        <div class="mb-2">
+                            <strong class="text-light d-block">Monday &ndash; Saturday</strong>
+                            <span>05:30 AM &ndash; 11:00 PM</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong class="text-light d-block">Sunday &amp; Holidays</strong>
+                            <span>07:00 AM &ndash; 08:00 PM</span>
+                        </div>
+                        <div>
+                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
+                                <span class="spinner-grow spinner-grow-sm me-1" style="width: 8px; height: 8px;"></span> Facility Open Today
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Col 4: Corporate & Support -->
+                <div class="col-lg-3 col-md-6">
+                    <h6>Headquarters &amp; Help</h6>
+                    <ul class="small" style="color: #94a3b8;">
+                        <li class="mb-2">
+                            <i class="bi bi-geo-alt-fill text-warning me-2"></i> IronPulse Tower, Elite Fitness Boulevard, Sector 4
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-telephone-fill text-warning me-2"></i> +91 (020) 2456-7890
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-envelope-fill text-warning me-2"></i> support@ironpulsefitness.com
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-receipt-cutoff text-warning me-2"></i> GSTIN: 27AABCI1234F1Z8
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="footer-bottom-bar d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                <div>
+                    &copy; 2026 IronPulse Fitness Ltd. All rights reserved. Enterprise Gym Management System.
+                </div>
+                <div class="d-flex gap-3">
+                    <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    <span>&bull;</span>
+                    <a href="#!">Terms of Service</a>
+                    <span>&bull;</span>
+                    <a href="#!">Safety Guidelines</a>
+                </div>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

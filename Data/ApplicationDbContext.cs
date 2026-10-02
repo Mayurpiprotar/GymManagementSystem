@@ -21,6 +21,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<TrainerSpecialization> TrainerSpecializations { get; set; } = null!;
     public DbSet<TrainerApplication> TrainerApplications { get; set; } = null!;
     public DbSet<TrainerApplicationSpecialization> TrainerApplicationSpecializations { get; set; } = null!;
+    public DbSet<Referral> Referrals { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -151,7 +152,26 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasForeignKey(ta => ta.ReviewedByAdminId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // 15. Seed standard Specializations (7 categories)
+        // 15. Referral configurations
+        modelBuilder.Entity<Referral>()
+            .HasOne(r => r.ReferredMember)
+            .WithMany()
+            .HasForeignKey(r => r.ReferredMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Referral>()
+            .HasOne(r => r.ReferrerMember)
+            .WithMany()
+            .HasForeignKey(r => r.ReferrerMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Referral>()
+            .HasOne(r => r.ReferrerTrainer)
+            .WithMany()
+            .HasForeignKey(r => r.ReferrerTrainerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 16. Seed standard Specializations (7 categories)
         modelBuilder.Entity<Specialization>().HasData(
             new Specialization { SpecializationId = 1, Name = "Strength & Hypertrophy", Description = "Strength development and muscle hypertrophy training." },
             new Specialization { SpecializationId = 2, Name = "Weight Loss & Fat Loss", Description = "Training focused on calorie expenditure, conditioning and fat-loss goals." },

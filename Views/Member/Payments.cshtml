@@ -91,6 +91,9 @@
                                             <a asp-action="PaymentSuccess" asp-route-id="@payment.PaymentId" class="btn btn-sm btn-outline-primary">
                                                 Receipt
                                             </a>
+                                            <a asp-action="DownloadReceipt" asp-route-id="@payment.PaymentId" class="btn btn-sm btn-outline-success ms-1" title="Download Official PDF Tax Receipt">
+                                                <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                                            </a>
                                         }
                                         else
                                         {

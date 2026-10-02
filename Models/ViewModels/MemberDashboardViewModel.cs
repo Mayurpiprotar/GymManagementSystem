@@ -14,4 +14,5 @@ public class MemberDashboardViewModel
     public List<Membership> AllMemberships { get; set; } = new();
     public List<Payment> PaymentHistory { get; set; } = new();
     public List<WorkoutPlan> WorkoutPlans { get; set; } = new();
+    public Services.MemberReferralSummary? ReferralInfo { get; set; }
 }

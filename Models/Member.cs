@@ -33,6 +33,12 @@ public class Member
     [DataType(DataType.Date)]
     public DateTime JoinDate { get; set; }
 
+    [StringLength(50)]
+    public string? ReferralCode { get; set; }
+
+    [StringLength(50)]
+    public string? ReferredByCode { get; set; }
+
     // Account linkage
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }

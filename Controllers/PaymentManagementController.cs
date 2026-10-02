@@ -151,6 +151,13 @@ public class PaymentManagementController : Controller
             return NotFound();
         }
 
+        // Business Rule: Completed/Paid transactions are legally and audit locked
+        if (payment.Status == "Paid")
+        {
+            TempData["ErrorMessage"] = "Accounting Security: Finalized 'Paid' transactions cannot be edited. Download the official PDF receipt for auditing.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
         var model = new PaymentViewModel
         {
             PaymentId = payment.PaymentId,
@@ -176,17 +183,23 @@ public class PaymentManagementController : Controller
             return NotFound();
         }
 
-        ModelState.Remove(nameof(model.MemberList));
-        ModelState.Remove(nameof(model.MembershipList));
-        ModelState.Remove(nameof(model.PaymentMethodList));
-        ModelState.Remove(nameof(model.StatusList));
-        ModelState.Remove(nameof(model.AvailableMemberships));
-
         var payment = await _context.Payments.FindAsync(id);
         if (payment == null)
         {
             return NotFound();
         }
+
+        if (payment.Status == "Paid")
+        {
+            TempData["ErrorMessage"] = "Accounting Security: Finalized 'Paid' transactions cannot be edited.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        ModelState.Remove(nameof(model.MemberList));
+        ModelState.Remove(nameof(model.MembershipList));
+        ModelState.Remove(nameof(model.PaymentMethodList));
+        ModelState.Remove(nameof(model.StatusList));
+        ModelState.Remove(nameof(model.AvailableMemberships));
 
         var memberExists = await _context.Members.AnyAsync(m => m.MemberId == model.MemberId);
         if (!memberExists)
@@ -325,5 +338,25 @@ public class PaymentManagementController : Controller
             Value = s,
             Text = s
         });
+    }
+
+    // GET: PaymentManagement/DownloadReceipt/5
+    [HttpGet]
+    public async Task<IActionResult> DownloadReceipt(int id)
+    {
+        var payment = await _context.Payments
+            .Include(p => p.Member)
+            .Include(p => p.Membership)
+                .ThenInclude(m => m!.MembershipPlan)
+            .FirstOrDefaultAsync(p => p.PaymentId == id);
+
+        if (payment == null)
+        {
+            return NotFound("Payment receipt not found.");
+        }
+
+        var pdfBytes = PdfReceiptService.GenerateReceiptPdf(payment);
+        var fileName = $"IronPulse-Receipt-TXN{payment.PaymentId:D6}.pdf";
+        return File(pdfBytes, "application/pdf", fileName);
     }
 }

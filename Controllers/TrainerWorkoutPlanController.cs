@@ -307,7 +307,7 @@ public class TrainerWorkoutPlanController : Controller
             return null;
         }
 
-        return await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == user.Id);
+        return await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == user.Id && t.IsVerified);
     }
 
     private async Task<bool> IsMemberEligibleForTrainerAsync(int memberId, int trainerId, DateTime today)

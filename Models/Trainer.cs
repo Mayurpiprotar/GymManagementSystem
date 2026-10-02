@@ -27,6 +27,11 @@ public class Trainer
     [DataType(DataType.Date)]
     public DateTime HireDate { get; set; }
 
+    [StringLength(50)]
+    public string? ReferralCode { get; set; }
+
+    public bool IsVerified { get; set; } = true;
+
     // Account linkage
     public string? UserId { get; set; }
     public ApplicationUser? User { get; set; }

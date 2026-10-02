@@ -14,13 +14,16 @@ public class TrainerController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ReferralService _referralService;
 
     public TrainerController(
         ApplicationDbContext context,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ReferralService referralService)
     {
         _context = context;
         _userManager = userManager;
+        _referralService = referralService;
     }
 
     public async Task<IActionResult> Index()
@@ -41,8 +44,26 @@ public class TrainerController : Controller
             return View(new TrainerDashboardViewModel
             {
                 TrainerName = user.FullName ?? user.UserName ?? "Trainer",
-                Email = user.Email ?? string.Empty
+                Email = user.Email ?? string.Empty,
+                IsVerified = false
             });
+        }
+
+        // If trainer is not verified, show verification status only and lock member lists
+        if (!trainer.IsVerified)
+        {
+            var unverifiedVm = new TrainerDashboardViewModel
+            {
+                TrainerId = trainer.TrainerId,
+                TrainerName = trainer.FullName,
+                Specialization = trainer.Specialization,
+                Email = trainer.Email,
+                Phone = trainer.Phone,
+                IsVerified = false,
+                AssignedMemberships = new List<Membership>(),
+                RecentWorkoutPlans = new List<WorkoutPlan>()
+            };
+            return View(unverifiedVm);
         }
 
         var today = DateTime.Today;
@@ -93,6 +114,8 @@ public class TrainerController : Controller
             .Take(5)
             .ToListAsync();
 
+        var referralBonus = await _referralService.GetTrainerMonthlyBonusAsync(trainer.TrainerId);
+
         var viewModel = new TrainerDashboardViewModel
         {
             TrainerId = trainer.TrainerId,
@@ -100,11 +123,13 @@ public class TrainerController : Controller
             Specialization = trainer.Specialization,
             Email = trainer.Email,
             Phone = trainer.Phone,
+            IsVerified = true,
             AssignedWorkoutPlansCount = assignedWorkoutPlansCount,
             UniqueAssignedMembersCount = uniqueMembersCount,
             ActiveAssignedMembersCount = activeAssignedMembersCount,
             AssignedMemberships = eligibleAssignedMemberships,
-            RecentWorkoutPlans = recentWorkoutPlans
+            RecentWorkoutPlans = recentWorkoutPlans,
+            ReferralBonus = referralBonus
         };
 
         return View(viewModel);
@@ -132,9 +157,10 @@ public class TrainerController : Controller
             .AsNoTracking()
             .FirstOrDefaultAsync(t => t.UserId == user.Id);
 
-        if (trainer == null)
+        if (trainer == null || !trainer.IsVerified)
         {
-            return NotFound();
+            TempData["ErrorMessage"] = "Your trainer account is awaiting administrative verification before member details can be accessed.";
+            return RedirectToAction(nameof(Index));
         }
 
         var today = DateTime.Today;

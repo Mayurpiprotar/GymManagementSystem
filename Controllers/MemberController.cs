@@ -19,13 +19,16 @@ public class MemberController : Controller
 {
     private readonly ApplicationDbContext _context;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ReferralService _referralService;
 
     public MemberController(
         ApplicationDbContext context,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ReferralService referralService)
     {
         _context = context;
         _userManager = userManager;
+        _referralService = referralService;
     }
 
     // =========================================================================
@@ -81,6 +84,8 @@ public class MemberController : Controller
             .ThenByDescending(wp => wp.WorkoutPlanId)
             .ToListAsync();
 
+        var referralInfo = await _referralService.GetMemberSummaryAsync(member.MemberId);
+
         var viewModel = new MemberDashboardViewModel
         {
             MemberId = member.MemberId,
@@ -92,7 +97,8 @@ public class MemberController : Controller
             CurrentMembership = currentMembership,
             AllMemberships = memberships,
             PaymentHistory = payments,
-            WorkoutPlans = workoutPlans
+            WorkoutPlans = workoutPlans,
+            ReferralInfo = referralInfo
         };
 
         return View(viewModel);
@@ -549,6 +555,16 @@ public class MemberController : Controller
 
         var canonicalStatus = MembershipStatusResolver.ResolveStatus(membership);
 
+        bool isRenewal = await _context.Memberships.AnyAsync(m => m.MemberId == member.MemberId && m.MembershipId != membership.MembershipId && m.Payments.Any(p => p.Status == GymConstants.PaymentStatuses.Paid));
+        var discountPct = await _referralService.CalculateDiscountPercentAsync(member.MemberId, isRenewal);
+        string? discountReason = null;
+        if (discountPct > 0)
+        {
+            discountReason = isRenewal
+                ? $"Member Referral Reward: {discountPct}% OFF renewal applied!"
+                : $"Welcome Referral Gift: {discountPct}% OFF first membership applied!";
+        }
+
         var viewModel = new MembershipCheckoutViewModel
         {
             MembershipId = membership.MembershipId,
@@ -568,7 +584,9 @@ public class MemberController : Controller
             CanonicalStatus = canonicalStatus,
             AssignedTrainerId = membership.AssignedTrainerId,
             AssignedTrainerName = membership.AssignedTrainer?.FullName,
-            PreviousPayments = membership.Payments.OrderByDescending(p => p.PaymentDate).ToList()
+            PreviousPayments = membership.Payments.OrderByDescending(p => p.PaymentDate).ToList(),
+            DiscountPercent = discountPct,
+            DiscountReason = discountReason
         };
 
         return View(viewModel);
@@ -609,6 +627,16 @@ public class MemberController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        bool isRenewal = await _context.Memberships.AnyAsync(m => m.MemberId == member.MemberId && m.MembershipId != membership.MembershipId && m.Payments.Any(p => p.Status == GymConstants.PaymentStatuses.Paid));
+        var discountPct = await _referralService.CalculateDiscountPercentAsync(member.MemberId, isRenewal);
+        string? discountReason = null;
+        if (discountPct > 0)
+        {
+            discountReason = isRenewal
+                ? $"Member Referral Reward: {discountPct}% OFF renewal applied!"
+                : $"Welcome Referral Gift: {discountPct}% OFF first membership applied!";
+        }
+
         var viewModel = new MembershipCheckoutViewModel
         {
             MembershipId = membership.MembershipId,
@@ -629,6 +657,8 @@ public class MemberController : Controller
             AssignedTrainerId = membership.AssignedTrainerId,
             AssignedTrainerName = membership.AssignedTrainer?.FullName,
             PreviousPayments = membership.Payments.OrderByDescending(p => p.PaymentDate).ToList(),
+            DiscountPercent = discountPct,
+            DiscountReason = discountReason,
             SimulateSuccess = true
         };
 
@@ -669,8 +699,13 @@ public class MemberController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        // Authoritative pricing from database record
-        var authoritativeAmount = membership.MembershipPlan.Price;
+        // Authoritative pricing from database record with referral/renewal discounts
+        bool isRenewal = await _context.Memberships.AnyAsync(m => m.MemberId == member.MemberId && m.MembershipId != membership.MembershipId && m.Payments.Any(p => p.Status == GymConstants.PaymentStatuses.Paid));
+        var discountPct = await _referralService.CalculateDiscountPercentAsync(member.MemberId, isRenewal);
+        var basePrice = membership.MembershipPlan.Price;
+        var discountAmount = Math.Round(basePrice * (discountPct / 100m), 2);
+        var authoritativeAmount = Math.Max(0, basePrice - discountAmount);
+
         var transactionId = $"DEMO-{Guid.NewGuid():N}".ToUpperInvariant();
 
         if (simulateSuccess)
@@ -679,6 +714,10 @@ public class MemberController : Controller
             using var tx = await _context.Database.BeginTransactionAsync();
             try
             {
+                var notes = discountPct > 0
+                    ? $"Demo payment successful (₹{discountAmount:0.00} referral discount applied)"
+                    : "Demo payment successful (College simulation)";
+
                 var payment = new Payment
                 {
                     MemberId = member.MemberId,
@@ -688,11 +727,23 @@ public class MemberController : Controller
                     PaymentMethod = GymConstants.PaymentMethods.DemoGateway,
                     Status = GymConstants.PaymentStatuses.Paid,
                     TransactionId = transactionId,
-                    Notes = "Demo payment successful (College simulation)"
+                    Notes = notes
                 };
 
                 _context.Payments.Add(payment);
                 await _context.SaveChangesAsync();
+
+                // If welcome discount was used, mark referral as claimed
+                if (!isRenewal && discountPct > 0)
+                {
+                    var referral = await _context.Referrals.FirstOrDefaultAsync(r => r.ReferredMemberId == member.MemberId && !r.RewardClaimed);
+                    if (referral != null)
+                    {
+                        referral.RewardClaimed = true;
+                        referral.Status = "Completed";
+                        await _context.SaveChangesAsync();
+                    }
+                }
 
                 // Recalculate canonical status dynamically based on dates and verified payment
                 var canonicalStatus = MembershipStatusResolver.ResolveStatus(membership.StartDate, membership.EndDate, isPaid: true);
@@ -760,6 +811,33 @@ public class MemberController : Controller
         }
 
         return View(payment);
+    }
+
+    // GET: Member/DownloadReceipt/5
+    [HttpGet]
+    [Route("Member/DownloadReceipt/{id:int}")]
+    public async Task<IActionResult> DownloadReceipt(int id)
+    {
+        var member = await GetCurrentMemberAsync();
+        if (member == null)
+        {
+            return Challenge();
+        }
+
+        var payment = await _context.Payments
+            .Include(p => p.Member)
+            .Include(p => p.Membership)
+                .ThenInclude(ms => ms!.MembershipPlan)
+            .FirstOrDefaultAsync(p => p.PaymentId == id && p.MemberId == member.MemberId);
+
+        if (payment == null)
+        {
+            return NotFound("Payment receipt not found.");
+        }
+
+        var pdfBytes = PdfReceiptService.GenerateReceiptPdf(payment);
+        var fileName = $"IronPulse-Receipt-TXN{payment.PaymentId:D6}.pdf";
+        return File(pdfBytes, "application/pdf", fileName);
     }
 
     // =========================================================================

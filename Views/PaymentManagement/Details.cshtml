@@ -80,8 +80,17 @@
                 <div class="card-footer bg-light py-3 d-flex justify-content-between">
                     <a asp-action="Index" class="btn btn-outline-secondary">Back to List</a>
                     <div>
-                        <a asp-action="Edit" asp-route-id="@Model.PaymentId" class="btn btn-primary me-2">Edit Payment</a>
-                        <a asp-action="Delete" asp-route-id="@Model.PaymentId" class="btn btn-outline-danger">Delete</a>
+                        @if (Model.Status == "Paid")
+                        {
+                            <a asp-action="DownloadReceipt" asp-route-id="@Model.PaymentId" class="btn btn-success me-2">
+                                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Download PDF Receipt
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.PaymentId" class="btn btn-primary me-2">Edit Payment</a>
+                            <a asp-action="Delete" asp-route-id="@Model.PaymentId" class="btn btn-outline-danger">Delete</a>
+                        }
                     </div>
                 </div>
             </div>

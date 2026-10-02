@@ -44,6 +44,50 @@
         </div>
     }
 
+    @if (Model.ReferralInfo != null)
+    {
+        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border-radius: 12px;">
+            <div class="card-body p-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-7">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-warning text-dark fw-bold px-2 py-1">REFERRAL REWARDS</span>
+                            <span class="badge bg-success text-light">Up to 20% OFF Renewals</span>
+                        </div>
+                        <h4 class="fw-bold text-white mb-1">Invite Friends, Work Out Together &amp; Save!</h4>
+                        <p class="text-light-50 small mb-3" style="color: #cbd5e1;">
+                            Share your personal referral code. When a friend joins IronPulse, they get 10% OFF their first plan, and you unlock automatic discount savings on your next membership renewal!
+                        </p>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="small" style="color: #94a3b8;">Your Code:</span>
+                            <div class="input-group" style="max-width: 250px;">
+                                <input type="text" class="form-control form-control-sm font-monospace fw-bold text-dark bg-light" value="@Model.ReferralInfo.ReferralCode" readonly />
+                                <button class="btn btn-sm btn-warning fw-semibold px-3" type="button" onclick="navigator.clipboard.writeText('@Model.ReferralInfo.ReferralCode'); alert('Referral code copied to clipboard!');">
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-light small">Friends Referred</span>
+                                <span class="fs-4 fw-bold text-warning">@Model.ReferralInfo.TotalReferredFriends</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-light small">Your Renewal Discount</span>
+                                <span class="fs-4 fw-bold text-success">@Model.ReferralInfo.NextRenewalDiscountPercent% OFF</span>
+                            </div>
+                            <div class="small pt-2 border-top border-secondary text-light-50" style="color: #94a3b8; font-size: 0.8rem;">
+                                <span>Tier Ladder: 1 friend = 10% &bull; 2 friends = 15% &bull; 4+ friends = 20%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="row">
         <!-- Membership Card Column -->
         <div class="col-lg-8 mb-4">
@@ -263,6 +307,7 @@
                                                 @if (payment.Status == "Paid")
                                                 {
                                                     <a asp-action="PaymentSuccess" asp-route-id="@payment.PaymentId" class="btn btn-sm btn-outline-primary">Receipt</a>
+                                                    <a asp-action="DownloadReceipt" asp-route-id="@payment.PaymentId" class="btn btn-sm btn-outline-success ms-1" title="Download Official Tax Receipt PDF"><i class="bi bi-file-earmark-pdf"></i> PDF</a>
                                                 }
                                                 else
                                                 {

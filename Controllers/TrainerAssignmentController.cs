@@ -362,7 +362,7 @@ public class TrainerAssignmentController : Controller
             .Include(t => t.User)
             .Include(t => t.TrainerSpecializations)
                 .ThenInclude(ts => ts.Specialization)
-            .Where(t => !string.IsNullOrEmpty(t.UserId) && t.TrainerSpecializations.Any())
+            .Where(t => t.IsVerified && !string.IsNullOrEmpty(t.UserId) && t.TrainerSpecializations.Any())
             .ToListAsync();
     }
 

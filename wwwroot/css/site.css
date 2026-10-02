@@ -32,4 +32,160 @@ body {
 
 .validation-summary-valid {
   display: none;
+}
+
+/* ==========================================================================
+   IRONPULSE MODERN DESIGN SYSTEM & NAVBAR BOXES
+   ========================================================================== */
+
+/* Brand Logo Badge */
+.brand-logo-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none !important;
+}
+
+.brand-emblem {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  font-weight: 900;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brand-logo-container:hover .brand-emblem {
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(245, 158, 11, 0.45);
+}
+
+.brand-title {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1;
+}
+
+.brand-title .brand-accent {
+  color: #d97706;
+}
+
+.brand-tag {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-left: 0.35rem;
+}
+
+/* Navbar Box Pills */
+.nav-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.nav-box-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.42rem 0.85rem !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155 !important;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.18s ease-in-out;
+  text-decoration: none;
+}
+
+.nav-box-pill:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #0f172a !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+}
+
+.nav-box-pill.active {
+  background-color: #0f172a;
+  border-color: #0f172a;
+  color: #ffffff !important;
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.2);
+}
+
+.nav-box-pill.nav-cta {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-color: #d97706;
+  color: #0f172a !important;
+  font-weight: 700;
+  box-shadow: 0 3px 8px rgba(245, 158, 11, 0.3);
+}
+
+.nav-box-pill.nav-cta:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 5px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Professional Multi-Column Footer */
+.pro-footer {
+  background-color: #0f172a;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  padding-top: 3.5rem;
+  padding-bottom: 2rem;
+  border-top: 3px solid #f59e0b;
+  margin-top: 4rem;
+}
+
+.pro-footer h6 {
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.25rem;
+}
+
+.pro-footer a {
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.pro-footer a:hover {
+  color: #fbbf24;
+}
+
+.pro-footer ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pro-footer ul li {
+  margin-bottom: 0.65rem;
+}
+
+.footer-bottom-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+  margin-top: 2.5rem;
+  font-size: 0.8rem;
+  color: #64748b;
 }

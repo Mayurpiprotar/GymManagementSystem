@@ -379,25 +379,14 @@ public class TrainerApplicationController : Controller
 
         var normalizedEmail = application.Email.Trim().ToLowerInvariant();
 
-        // Check for conflicting Identity user
-        var existingUser = await _userManager.FindByEmailAsync(normalizedEmail);
-        if (existingUser != null)
+        // Check if an existing trainer profile is already active/verified under another application
+        var conflictingVerifiedTrainer = await _context.Trainers.FirstOrDefaultAsync(t => 
+            t.Email.ToLower() == normalizedEmail && 
+            t.IsVerified && 
+            t.ApplicationId != application.TrainerApplicationId);
+        if (conflictingVerifiedTrainer != null)
         {
-            TempData["ErrorMessage"] = $"Cannot approve application #{id} because an Identity account with email '{application.Email}' already exists.";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        // Check for conflicting Trainer domain record
-        var existingTrainer = await _context.Trainers.AnyAsync(t => t.Email.ToLower() == normalizedEmail);
-        if (existingTrainer)
-        {
-            TempData["ErrorMessage"] = $"Cannot approve application #{id} because a Trainer record with email '{application.Email}' already exists.";
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        if (string.IsNullOrEmpty(application.TemporaryPasswordHash))
-        {
-            TempData["ErrorMessage"] = $"Cannot approve application #{id} because no temporary password hash was preserved.";
+            TempData["ErrorMessage"] = $"Cannot approve application #{id} because an active verified Trainer record with email '{application.Email}' already exists.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -405,32 +394,53 @@ public class TrainerApplicationController : Controller
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // 1. Create Identity User preserving precomputed password hash
-            var user = new ApplicationUser
+            // 1. Create or resolve Identity User
+            var idUser = await _userManager.FindByEmailAsync(application.Email);
+            ApplicationUser user;
+            if (idUser != null)
             {
-                UserName = application.Email,
-                Email = application.Email,
-                FullName = application.FullName,
-                EmailConfirmed = true,
-                SecurityStamp = Guid.NewGuid().ToString("D"),
-                PasswordHash = application.TemporaryPasswordHash
-            };
-
-            var userResult = await _userManager.CreateAsync(user);
-            if (!userResult.Succeeded)
-            {
-                await transaction.RollbackAsync();
-                TempData["ErrorMessage"] = $"Failed to create Identity account: {string.Join(", ", userResult.Errors.Select(e => e.Description))}";
-                return RedirectToAction(nameof(Details), new { id });
+                user = idUser;
+                if (!await _userManager.IsInRoleAsync(user, "Trainer"))
+                {
+                    await _userManager.AddToRoleAsync(user, "Trainer");
+                }
             }
-
-            // 2. Assign Trainer role
-            var roleResult = await _userManager.AddToRoleAsync(user, "Trainer");
-            if (!roleResult.Succeeded)
+            else
             {
-                await transaction.RollbackAsync();
-                TempData["ErrorMessage"] = $"Failed to assign Trainer role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}";
-                return RedirectToAction(nameof(Details), new { id });
+                if (string.IsNullOrEmpty(application.TemporaryPasswordHash))
+                {
+                    await transaction.RollbackAsync();
+                    TempData["ErrorMessage"] = $"Cannot approve application #{id} because no temporary password hash was preserved.";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                user = new ApplicationUser
+                {
+                    UserName = application.Email,
+                    Email = application.Email,
+                    FullName = application.FullName,
+                    PhoneNumber = application.Phone,
+                    EmailConfirmed = true,
+                    SecurityStamp = Guid.NewGuid().ToString("D"),
+                    PasswordHash = application.TemporaryPasswordHash
+                };
+
+                var userResult = await _userManager.CreateAsync(user);
+                if (!userResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["ErrorMessage"] = $"Failed to create Identity account: {string.Join(", ", userResult.Errors.Select(e => e.Description))}";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
+
+                // 2. Assign Trainer role
+                var roleResult = await _userManager.AddToRoleAsync(user, "Trainer");
+                if (!roleResult.Succeeded)
+                {
+                    await transaction.RollbackAsync();
+                    TempData["ErrorMessage"] = $"Failed to assign Trainer role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}";
+                    return RedirectToAction(nameof(Details), new { id });
+                }
             }
 
             // 3. Format specialization summary string for backward compatibility
@@ -442,29 +452,48 @@ public class TrainerApplicationController : Controller
                 ? string.Join(", ", specializationNames)
                 : "General Fitness";
 
-            // 4. Create Trainer domain profile linked to the application
-            var trainer = new Trainer
+            // 4. Create or verify Trainer domain profile linked to the application
+            var existingTrainer = await _context.Trainers.FirstOrDefaultAsync(t => t.UserId == user.Id || t.ApplicationId == application.TrainerApplicationId);
+            if (existingTrainer != null)
             {
-                FullName = application.FullName,
-                Email = application.Email,
-                Phone = application.Phone,
-                Specialization = specializationSummary,
-                HireDate = DateTime.Today,
-                UserId = user.Id,
-                ApplicationId = application.TrainerApplicationId
-            };
-
-            _context.Trainers.Add(trainer);
-            await _context.SaveChangesAsync();
-
-            // 5. Create TrainerSpecialization join entries
-            foreach (var appSpec in application.ApplicationSpecializations)
-            {
-                _context.TrainerSpecializations.Add(new TrainerSpecialization
+                existingTrainer.IsVerified = true;
+                existingTrainer.ApplicationId = application.TrainerApplicationId;
+                if (string.IsNullOrWhiteSpace(existingTrainer.ReferralCode))
                 {
-                    TrainerId = trainer.TrainerId,
-                    SpecializationId = appSpec.SpecializationId
-                });
+                    existingTrainer.ReferralCode = $"REF-T{existingTrainer.TrainerId}";
+                }
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                var trainer = new Trainer
+                {
+                    FullName = application.FullName,
+                    Email = application.Email,
+                    Phone = application.Phone,
+                    Specialization = specializationSummary,
+                    HireDate = DateTime.Today,
+                    UserId = user.Id,
+                    ApplicationId = application.TrainerApplicationId,
+                    IsVerified = true,
+                    ReferralCode = $"REF-T{user.Id.Substring(0, Math.Min(6, user.Id.Length)).ToUpper()}"
+                };
+
+                _context.Trainers.Add(trainer);
+                await _context.SaveChangesAsync();
+
+                trainer.ReferralCode = $"REF-T{trainer.TrainerId}";
+                await _context.SaveChangesAsync();
+
+                // 5. Create TrainerSpecialization join entries
+                foreach (var appSpec in application.ApplicationSpecializations)
+                {
+                    _context.TrainerSpecializations.Add(new TrainerSpecialization
+                    {
+                        TrainerId = trainer.TrainerId,
+                        SpecializationId = appSpec.SpecializationId
+                    });
+                }
             }
 
             // 6. Update application status and clear temporary password hash

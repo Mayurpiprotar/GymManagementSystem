@@ -100,17 +100,26 @@
                                             <span class="badge bg-light text-dark border">@item.Status</span>
                                         }
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a asp-action="Details" asp-route-id="@item.PaymentId" class="btn btn-outline-secondary" title="View Details">
                                                 Details
                                             </a>
-                                            <a asp-action="Edit" asp-route-id="@item.PaymentId" class="btn btn-outline-primary" title="Edit Payment">
-                                                Edit
-                                            </a>
-                                            <a asp-action="Delete" asp-route-id="@item.PaymentId" class="btn btn-outline-danger" title="Delete Payment">
-                                                Delete
-                                            </a>
+                                            @if (item.Status == "Paid")
+                                            {
+                                                <a asp-action="DownloadReceipt" asp-route-id="@item.PaymentId" class="btn btn-outline-success" title="Download Official Tax Receipt">
+                                                    PDF
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@item.PaymentId" class="btn btn-outline-primary" title="Edit Pending Payment">
+                                                    Edit
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.PaymentId" class="btn btn-outline-danger" title="Delete Payment">
+                                                    Delete
+                                                </a>
+                                            }
                                         </div>
                                     </td>
                                 </tr>

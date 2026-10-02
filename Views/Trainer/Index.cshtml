@@ -11,102 +11,196 @@
             <h1 class="h2 mb-1">Trainer Dashboard</h1>
             <p class="text-muted mb-0">Welcome back, <span class="fw-semibold text-dark">@Model.TrainerName</span>!</p>
         </div>
-        <div>
+        <div class="d-flex gap-2 align-items-center">
+            @if (Model.IsVerified)
+            {
+                <span class="badge bg-success px-3 py-2 fs-6">
+                    <i class="bi bi-patch-check-fill me-1"></i> Verified Trainer
+                </span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark px-3 py-2 fs-6">
+                    <i class="bi bi-clock-history me-1"></i> Verification Pending
+                </span>
+            }
             <span class="badge bg-info text-dark px-3 py-2 fs-6">
                 @(string.IsNullOrWhiteSpace(Model.Specialization) ? "Fitness Trainer" : Model.Specialization)
             </span>
         </div>
     </div>
 
-    <!-- Quick Actions & Trainer Info Row -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-7">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-light py-3">
-                    <h5 class="card-title mb-0 fw-semibold">Quick Actions</h5>
+    @if (!Model.IsVerified)
+    {
+        <!-- Pending Verification State - Restriction Banner -->
+        <div class="card border-warning shadow-sm mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <span class="badge rounded-circle bg-warning p-3 text-dark fs-3">
+                        <i class="bi bi-shield-exclamation"></i>
+                    </span>
                 </div>
-                <div class="card-body d-flex flex-column justify-content-center">
-                    <p class="text-muted mb-3">Create and manage customized training schedules for your assigned gym members.</p>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-primary px-3">
-                            My Workout Plans
-                        </a>
-                        <a asp-controller="TrainerWorkoutPlan" asp-action="Create" class="btn btn-outline-primary px-3">
-                            + Create Workout Plan
-                        </a>
+                <h3 class="fw-bold text-dark">Account Verification In Progress</h3>
+                <p class="text-muted mx-auto" style="max-width: 650px;">
+                    Your trainer registration and credentials PDF are currently under administrative review by IronPulse Gym management.
+                    For client safety and audit standards, access to member rosters, personal health details, and workout plan authoring will remain restricted until your profile is officially verified.
+                </p>
+                <div class="d-inline-flex align-items-center bg-light border px-4 py-2 rounded-pill mt-2">
+                    <span class="spinner-grow spinner-grow-sm text-warning me-2" role="status"></span>
+                    <span class="fw-semibold text-secondary">Status: Pending Administrative Review</span>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Coach Referral & Monthly Performance Bonus Hub -->
+        @if (Model.ReferralBonus != null)
+        {
+            <div class="card border-0 shadow-sm mb-4 bg-gradient" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff;">
+                <div class="card-body p-4">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-7">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-warning text-dark fw-bold px-2 py-1">TRAINER REWARDS</span>
+                                <span class="badge bg-secondary text-light">Month of @Model.ReferralBonus.MonthYear</span>
+                            </div>
+                            <h3 class="fw-bold mb-2 text-white">Earn Monthly Bonuses &amp; Grow IronPulse</h3>
+                            <p class="text-light-50 mb-3" style="color: #cbd5e1;">
+                                Share your personal referral code with new gym seekers. Bring 2+ members this month to activate cash bonuses. Refer 10+ members to unlock an official <strong>Master Trainer Promotion</strong>!
+                            </p>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="text-muted small" style="color: #94a3b8;">Your Referral Code:</span>
+                                <div class="input-group" style="max-width: 280px;">
+                                    <input type="text" class="form-control font-monospace fw-bold text-dark bg-light" value="@Model.ReferralBonus.ReferralCode" id="trainerRefCode" readonly />
+                                    <button class="btn btn-warning fw-semibold px-3" type="button" onclick="navigator.clipboard.writeText('@Model.ReferralBonus.ReferralCode'); alert('Referral code copied to clipboard!');">
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="p-3 rounded" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-light small">This Month's Referrals</span>
+                                    <span class="fs-4 fw-bold text-warning">@Model.ReferralBonus.CurrentMonthReferrals Members</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="text-light small">Bonus Unlocked</span>
+                                    <span class="fs-4 fw-bold text-success">Rs. @Model.ReferralBonus.BonusAmount.ToString("N0")</span>
+                                </div>
+                                <div class="progress mb-2" style="height: 8px;">
+                                    @{
+                                        var pct = Math.Min(100, (Model.ReferralBonus.CurrentMonthReferrals / 10.0) * 100);
+                                    }
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: @(pct)%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small" style="color: #94a3b8;">
+                                    <span>@(Model.ReferralBonus.HasReachedMinimum ? "Bonus Tier Active" : "Min 2 needed to unlock")</span>
+                                    <span>Target: 10 (Master Coach)</span>
+                                </div>
+                                @if (Model.ReferralBonus.HasPromotionQualified)
+                                {
+                                    <div class="badge bg-success-subtle text-success border border-success w-100 py-2 mt-2">
+                                        Qualified for Master Trainer Promotion!
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Quick Actions & Trainer Info Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-7">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="card-title mb-0 fw-semibold">Quick Actions</h5>
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <p class="text-muted mb-3">Create and manage customized training schedules for your assigned gym members.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-primary px-3">
+                                My Workout Plans
+                            </a>
+                            <a asp-controller="TrainerWorkoutPlan" asp-action="Create" class="btn btn-outline-primary px-3">
+                                + Create Workout Plan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light py-3">
+                        <h5 class="card-title mb-0 fw-semibold">Trainer Profile</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-sm-4 text-muted small">Name</dt>
+                            <dd class="col-sm-8 fw-semibold mb-2">@Model.TrainerName</dd>
+
+                            <dt class="col-sm-4 text-muted small">Specialty</dt>
+                            <dd class="col-sm-8 mb-2">@(string.IsNullOrWhiteSpace(Model.Specialization) ? "General Fitness" : Model.Specialization)</dd>
+
+                            <dt class="col-sm-4 text-muted small">Email</dt>
+                            <dd class="col-sm-8 mb-2 small text-truncate">@Model.Email</dd>
+
+                            <dt class="col-sm-4 text-muted small">Phone</dt>
+                            <dd class="col-sm-8 mb-0">@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</dd>
+                        </dl>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-5">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-light py-3">
-                    <h5 class="card-title mb-0 fw-semibold">Trainer Profile</h5>
-                </div>
-                <div class="card-body">
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4 text-muted small">Name</dt>
-                        <dd class="col-sm-8 fw-semibold mb-2">@Model.TrainerName</dd>
-
-                        <dt class="col-sm-4 text-muted small">Specialty</dt>
-                        <dd class="col-sm-8 mb-2">@(string.IsNullOrWhiteSpace(Model.Specialization) ? "General Fitness" : Model.Specialization)</dd>
-
-                        <dt class="col-sm-4 text-muted small">Email</dt>
-                        <dd class="col-sm-8 mb-2 small text-truncate">@Model.Email</dd>
-
-                        <dt class="col-sm-4 text-muted small">Phone</dt>
-                        <dd class="col-sm-8 mb-0">@(string.IsNullOrWhiteSpace(Model.Phone) ? "Not provided" : Model.Phone)</dd>
-                    </dl>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Summary Statistics Row -->
-    <div class="row g-3 mb-4">
-        <div class="col-sm-4">
-            <div class="card shadow-sm border-0 border-start border-info border-4">
-                <div class="card-body">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Active Assigned Clients</div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="display-5 fw-bold text-info">@Model.ActiveAssignedMembersCount</span>
-                        <span class="badge bg-info-subtle text-dark">Active Workload</span>
+        <!-- Summary Statistics Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-4">
+                <div class="card shadow-sm border-0 border-start border-info border-4">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">Active Assigned Clients</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="display-5 fw-bold text-info">@Model.ActiveAssignedMembersCount</span>
+                            <span class="badge bg-info-subtle text-dark">Active Workload</span>
+                        </div>
+                        <div class="text-muted small mt-1">Currently coaching members</div>
                     </div>
-                    <div class="text-muted small mt-1">Currently coaching members</div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-sm-4">
-            <div class="card shadow-sm border-0 border-start border-primary border-4">
-                <div class="card-body">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Assigned Workout Plans</div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="display-5 fw-bold text-primary">@Model.AssignedWorkoutPlansCount</span>
-                        <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+            <div class="col-sm-4">
+                <div class="card shadow-sm border-0 border-start border-primary border-4">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">Assigned Workout Plans</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="display-5 fw-bold text-primary">@Model.AssignedWorkoutPlansCount</span>
+                            <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                        </div>
+                        <div class="text-muted small mt-1">Total plans created by you</div>
                     </div>
-                    <div class="text-muted small mt-1">Total plans created by you</div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-sm-4">
-            <div class="card shadow-sm border-0 border-start border-success border-4">
-                <div class="card-body">
-                    <div class="text-muted small text-uppercase fw-semibold mb-1">Unique Members Trained</div>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="display-5 fw-bold text-success">@Model.UniqueAssignedMembersCount</span>
-                        <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-sm btn-light">View Members</a>
+            <div class="col-sm-4">
+                <div class="card shadow-sm border-0 border-start border-success border-4">
+                    <div class="card-body">
+                        <div class="text-muted small text-uppercase fw-semibold mb-1">Unique Members Trained</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="display-5 fw-bold text-success">@Model.UniqueAssignedMembersCount</span>
+                            <a asp-controller="TrainerWorkoutPlan" asp-action="Index" class="btn btn-sm btn-light">View Members</a>
+                        </div>
+                        <div class="text-muted small mt-1">Distinct members trained</div>
                     </div>
-                    <div class="text-muted small mt-1">Distinct members trained</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Assigned Clients / Members Table (Part O: Trainer assignment view) -->
-    <div class="card shadow-sm border-0 mb-4">
+        <!-- Assigned Clients / Members Table (Part O: Trainer assignment view) -->
+        <div class="card shadow-sm border-0 mb-4">
         <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center">
             <div>
                 <h5 class="card-title mb-0 fw-semibold">My Assigned Members</h5>
@@ -255,4 +349,5 @@
             }
         </div>
     </div>
+    }
 </div>

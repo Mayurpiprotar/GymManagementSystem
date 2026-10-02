@@ -1,4 +1,5 @@
 using GymManagementSystem.Models;
+using GymManagementSystem.Services;
 
 namespace GymManagementSystem.Models.ViewModels;
 
@@ -9,6 +10,7 @@ public class TrainerDashboardViewModel
     public string Specialization { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
+    public bool IsVerified { get; set; } = true;
 
     public int AssignedWorkoutPlansCount { get; set; }
     public int UniqueAssignedMembersCount { get; set; }
@@ -17,4 +19,7 @@ public class TrainerDashboardViewModel
     public List<Membership> AssignedMemberships { get; set; } = new();
 
     public List<WorkoutPlan> RecentWorkoutPlans { get; set; } = new();
+
+    // Referral and monthly performance bonus metrics
+    public TrainerMonthlyBonusSummary? ReferralBonus { get; set; }
 }

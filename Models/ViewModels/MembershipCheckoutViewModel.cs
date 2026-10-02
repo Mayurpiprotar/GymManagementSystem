@@ -40,4 +40,10 @@ public class MembershipCheckoutViewModel
 
     // Simulation parameter for demo payment
     public bool SimulateSuccess { get; set; } = true;
+
+    // Referral and Renewal Discount Fields
+    public decimal DiscountPercent { get; set; }
+    public decimal DiscountAmount => Math.Round(PlanPrice * (DiscountPercent / 100m), 2);
+    public decimal FinalAmount => Math.Max(0, PlanPrice - DiscountAmount);
+    public string? DiscountReason { get; set; }
 }

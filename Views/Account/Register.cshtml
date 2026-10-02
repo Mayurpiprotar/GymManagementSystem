@@ -1,52 +1,178 @@
 @model GymManagementSystem.Models.ViewModels.RegisterViewModel
 
 @{
-    ViewData["Title"] = "Register Member Account";
+    ViewData["Title"] = "Register Account - IronPulse Gym";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center mb-2">Member Registration</h2>
-                <p class="text-center text-muted mb-4 small">Create a new member account to join the gym</p>
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <!-- Header Accent -->
+            <div class="card-header bg-dark text-white p-4 text-center border-0" style="background: linear-gradient(135deg, #111827 0%, #1e3a8a 100%);">
+                <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-25 rounded-circle p-3 mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-person-plus-fill text-warning" viewBox="0 0 16 16">
+                        <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                        <path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/>
+                    </svg>
+                </div>
+                <h2 class="h3 fw-bold mb-1 text-white">Join IronPulse Fitness Arena</h2>
+                <p class="text-light text-opacity-75 small mb-0">Select your account type and start your professional fitness journey</p>
+            </div>
 
-                <form asp-action="Register" method="post">
+            <div class="card-body p-4 p-md-5 bg-white">
+                <form asp-action="Register" method="post" enctype="multipart/form-data" id="registerForm">
                     @if (!ViewData.ModelState.IsValid)
                     {
-                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small" role="alert"></div>
                     }
 
-                    <div class="mb-3">
-                        <label asp-for="FullName" class="form-label"></label>
-                        <input asp-for="FullName" class="form-control" placeholder="John Doe" />
-                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    <!-- 1. Role Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark mb-2">Account Type <span class="text-danger">*</span></label>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label class="card h-100 p-3 border-2 cursor-pointer role-card @(Model.Role == "Member" ? "border-primary bg-primary bg-opacity-10 text-primary" : "border-light-subtle")" for="roleMember" id="cardMember">
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" asp-for="Role" value="Member" id="roleMember" class="form-check-input me-3" checked="@(Model.Role == "Member")" onchange="toggleRoleFields()" />
+                                        <div>
+                                            <div class="fw-bold fs-6">🏋️ Member</div>
+                                            <div class="small text-muted">Fitness client seeking workouts & coaching</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="card h-100 p-3 border-2 cursor-pointer role-card @(Model.Role == "Trainer" ? "border-primary bg-primary bg-opacity-10 text-primary" : "border-light-subtle")" for="roleTrainer" id="cardTrainer">
+                                    <div class="d-flex align-items-center">
+                                        <input type="radio" asp-for="Role" value="Trainer" id="roleTrainer" class="form-check-input me-3" checked="@(Model.Role == "Trainer")" onchange="toggleRoleFields()" />
+                                        <div>
+                                            <div class="fw-bold fs-6">💼 Coach / Trainer</div>
+                                            <div class="small text-muted">Certified trainer applying to coach members</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" autocomplete="username" placeholder="name@example.com" />
-                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    <hr class="my-4 text-muted opacity-25" />
+
+                    <!-- 2. Common Personal Details -->
+                    <h5 class="fw-bold text-dark mb-3">1. Account Information</h5>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                            <input asp-for="FullName" class="form-control rounded-3 py-2" placeholder="e.g. Rahul Sharma" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="Email" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                            <input asp-for="Email" class="form-control rounded-3 py-2" autocomplete="username" placeholder="name@example.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" autocomplete="new-password" placeholder="At least 6 characters" />
-                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted">+91</span>
+                                <input asp-for="PhoneNumber" class="form-control rounded-end-3 py-2" placeholder="9876543210" />
+                            </div>
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ReferralCode" class="form-label fw-semibold small text-secondary">
+                                Referral Code <span class="badge bg-warning text-dark ms-1">⚡ 10% Discount</span>
+                            </label>
+                            <input asp-for="ReferralCode" class="form-control rounded-3 py-2 text-uppercase" placeholder="e.g. REF-M15 or REF-T25" />
+                            <span asp-validation-for="ReferralCode" class="text-danger small"></span>
+                            <div class="form-text small">Enter a friend's or trainer's code to unlock welcome savings.</div>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label asp-for="ConfirmPassword" class="form-label"></label>
-                        <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" placeholder="Re-enter password" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="Password" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                            <input asp-for="Password" class="form-control rounded-3 py-2" autocomplete="new-password" placeholder="At least 6 characters" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ConfirmPassword" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                            <input asp-for="ConfirmPassword" class="form-control rounded-3 py-2" autocomplete="new-password" placeholder="Re-enter password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
                     </div>
 
-                    <div class="d-grid gap-2 mb-3">
-                        <button type="submit" class="btn btn-success">Register</button>
+                    <!-- 3. Trainer-Specific Verification Details -->
+                    <div id="trainerFieldsSection" style="display: @(Model.Role == "Trainer" ? "block" : "none");">
+                        <hr class="my-4 text-muted opacity-25" />
+                        <div class="d-flex align-items-center mb-3">
+                            <h5 class="fw-bold text-dark mb-0">2. Professional Verification Details</h5>
+                            <span class="badge bg-info bg-opacity-10 text-info ms-2 px-2 py-1">Required for Coaches</span>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            To ensure high coaching standards, trainer accounts are verified by gym administration before member assignments are activated.
+                        </p>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="ExperienceYears" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                                <input asp-for="ExperienceYears" type="number" min="0" max="40" class="form-control rounded-3 py-2" placeholder="e.g. 5" />
+                                <span asp-validation-for="ExperienceYears" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-8">
+                                <label asp-for="QualificationsSummary" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                                <input asp-for="QualificationsSummary" class="form-control rounded-3 py-2" placeholder="e.g. ACE Certified Personal Trainer, CPR/AED" />
+                                <span asp-validation-for="QualificationsSummary" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Specializations Checkbox Group -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-secondary">Coaching Specializations <span class="text-danger">*</span></label>
+                            <div class="row g-2 p-3 bg-light rounded-3 border">
+                                @if (Model.AvailableSpecializations != null)
+                                {
+                                    @for (int i = 0; i < Model.AvailableSpecializations.Count; i++)
+                                    {
+                                        var spec = Model.AvailableSpecializations[i];
+                                        <div class="col-sm-6">
+                                            <div class="form-check">
+                                                <input type="checkbox" name="SelectedSpecializationIds" value="@spec.Value" id="spec_@spec.Value" class="form-check-input" @(spec.Selected ? "checked" : "") />
+                                                <label class="form-check-label small" for="spec_@spec.Value">@spec.Text</label>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <span asp-validation-for="SelectedSpecializationIds" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Certification Proof Document Upload -->
+                        <div class="mb-4">
+                            <label asp-for="CertificationDocument" class="form-label fw-semibold small text-secondary"></label> <span class="text-danger">*</span>
+                            <div class="p-3 bg-light rounded-3 border border-2 border-dashed text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark-arrow-up text-primary mb-2" viewBox="0 0 16 16">
+                                    <path d="M8.5 2a.5.5 0 0 1 .5.5v5.793l2.146-2.147a.5.5 0 0 1 .708.708l-3 3a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L8 8.293V2.5a.5.5 0 0 1 .5-.5"/>
+                                    <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
+                                </svg>
+                                <input asp-for="CertificationDocument" type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" />
+                                <div class="form-text small text-muted mt-2">Accepted formats: PDF, PNG, JPG (Max 5MB). Files are securely stored outside web access.</div>
+                            </div>
+                            <span asp-validation-for="CertificationDocument" class="text-danger small"></span>
+                        </div>
                     </div>
 
-                    <div class="text-center">
-                        <p class="mb-0 text-muted">Already have an account? <a asp-action="Login">Log in</a></p>
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 mb-3 pt-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3 shadow-sm py-3" id="submitBtn">
+                            Create Account &rarr; Proceed to Login
+                        </button>
+                    </div>
+
+                    <div class="text-center pt-2">
+                        <p class="mb-0 text-muted">Already have an IronPulse account? <a asp-action="Login" class="fw-bold text-decoration-none">Log in here</a></p>
                     </div>
                 </form>
             </div>
@@ -56,4 +182,26 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        function toggleRoleFields() {
+            var isTrainer = document.getElementById("roleTrainer").checked;
+            var trainerSection = document.getElementById("trainerFieldsSection");
+            var cardMember = document.getElementById("cardMember");
+            var cardTrainer = document.getElementById("cardTrainer");
+
+            if (isTrainer) {
+                trainerSection.style.display = "block";
+                cardTrainer.classList.add("border-primary", "bg-primary", "bg-opacity-10", "text-primary");
+                cardTrainer.classList.remove("border-light-subtle");
+                cardMember.classList.remove("border-primary", "bg-primary", "bg-opacity-10", "text-primary");
+                cardMember.classList.add("border-light-subtle");
+            } else {
+                trainerSection.style.display = "none";
+                cardMember.classList.add("border-primary", "bg-primary", "bg-opacity-10", "text-primary");
+                cardMember.classList.remove("border-light-subtle");
+                cardTrainer.classList.remove("border-primary", "bg-primary", "bg-opacity-10", "text-primary");
+                cardTrainer.classList.add("border-light-subtle");
+            }
+        }
+    </script>
 }
